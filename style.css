@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f9;
+}
+
+.container {
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#summary {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+#searchBox {
+    padding: 10px;
+    width: 300px;
+    max-width: 100%;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.table-container {
+    overflow: auto;
+    max-height: 80vh;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1200px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #1f2937;
+    color: white;
+    z-index: 3;
+}
+
+td.fund-name, th.fund-name {
+    position: sticky;
+    left: 0;
+    background: white;
+    text-align: left;
+    z-index: 2;
+    min-width: 250px;
+}
+
+th.fund-name {
+    background: #1f2937;
+    color: white;
+    z-index: 4;
+}
+
+tr:nth-child(even) td {
+    background: #fafafa;
+}
+
+tr:hover td {
+    background: #eef5ff;
+}
+
+.up {
+    background-color: #d1fae5 !important;
+    color: #065f46;
+    font-weight: bold;
+}
+
+.down {
+    background-color: #fee2e2 !important;
+    color: #991b1b;
+    font-weight: bold;
+}
+
+.no-data {
+    color: black;
+}

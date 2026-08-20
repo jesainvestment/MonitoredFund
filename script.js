@@ -1,223 +1,163 @@
 async function loadCSV() {
+    const res = await fetch("MonitoredFund.csv?v=" + Date.now());
+    const txt = await res.text();
 
-    try {
+    const rows = txt.trim()
+        .split(/\r?\n/)
+        .map(r => r.split(','));
 
-        const res = await fetch(
-            "MonitoredFund.csv?v=" + Date.now()
-        );
+    const head = rows[0];
+    const data = rows.slice(1);
 
-        if (!res.ok) {
-            throw new Error(
-                "Cannot load MonitoredFund.csv (" +
-                res.status +
-                ")"
-            );
+    let up = 0;
+    let down = 0;
+    let same = 0;
+    let nodata = 0;
+
+    const t = document.getElementById('fundTable');
+
+    // Clear existing table
+    t.innerHTML = "";
+
+    // =========================
+    // HEADER
+    // =========================
+
+    const hr = t.createTHead().insertRow();
+
+    head.forEach((h, i) => {
+        let th = document.createElement('th');
+        th.textContent = h;
+
+        if (i === head.length - 1) {
+            th.className = 'latest';
         }
 
-        const txt = await res.text();
+        hr.appendChild(th);
+    });
 
-        if (!txt.trim()) {
-            throw new Error(
-                "MonitoredFund.csv is empty"
-            );
-        }
+    // Add Trend header
+    let trendHeader = document.createElement('th');
+    trendHeader.textContent = 'Trend';
+    trendHeader.className = 'trend-column';
+    hr.appendChild(trendHeader);
 
-        const rows = txt
-            .trim()
-            .split(/\r?\n/)
-            .map(r => r.split(','));
+    // =========================
+    // BODY
+    // =========================
 
-        if (rows.length < 2) {
-            throw new Error(
-                "CSV does not contain enough data"
-            );
-        }
+    const tb = t.createTBody();
 
-        const head = rows[0];
-        const data = rows.slice(1);
+    data.forEach(r => {
 
-        let up = 0;
-        let down = 0;
-        let same = 0;
-        let nodata = 0;
+        let tr = tb.insertRow();
 
-        const table =
-            document.getElementById('fundTable');
+        let prev = null;
+        let lastTrend = '➡';
 
-        table.innerHTML = "";
+        r.forEach((c, i) => {
 
-        /* HEADER */
+            let td = tr.insertCell();
 
-        const headerRow =
-            table.createTHead().insertRow();
+            // =========================
+            // COLUMNS 1, 2 AND 3
+            // =========================
+            // These columns are locked/frozen
+            // =========================
 
-        head.forEach((h, i) => {
-
-            const th =
-                document.createElement('th');
-
-            th.textContent = h;
-
-            if (i === head.length - 1) {
-                th.className = 'latest';
+            if (i < 3) {
+                td.textContent = c;
+                return;
             }
 
-            headerRow.appendChild(th);
+            // =========================
+            // NO DATA
+            // =========================
+
+            if (c === '') {
+                td.textContent = '';
+                prev = null;
+                nodata++;
+                return;
+            }
+
+            // =========================
+            // NUMERIC VALUE
+            // =========================
+
+            let v = parseFloat(c);
+
+            if (isNaN(v)) {
+                td.textContent = c;
+                return;
+            }
+
+            // =========================
+            // COMPARE WITH PREVIOUS VALUE
+            // =========================
+
+            if (prev === null) {
+
+                td.textContent = '■ ' + v.toFixed(4);
+                td.className = 'same';
+
+                same++;
+
+            }
+            else if (v > prev) {
+
+                td.textContent = '▲ ' + v.toFixed(4);
+                td.className = 'up';
+
+                up++;
+                lastTrend = '📈';
+
+            }
+            else if (v < prev) {
+
+                td.textContent = '▼ ' + v.toFixed(4);
+                td.className = 'down';
+
+                down++;
+                lastTrend = '📉';
+
+            }
+            else {
+
+                td.textContent = '■ ' + v.toFixed(4);
+                td.className = 'same';
+
+                same++;
+            }
+
+            prev = v;
         });
 
-        /* TREND HEADER */
+        // =========================
+        // TREND COLUMN
+        // =========================
 
-        const trendHeader =
-            document.createElement('th');
+        let trendCell = tr.insertCell();
 
-        trendHeader.textContent = 'Trend';
-        trendHeader.className = 'trend-column';
+        trendCell.textContent = lastTrend;
+        trendCell.className = 'trend-column';
+    });
 
-        headerRow.appendChild(trendHeader);
+    // =========================
+    // STATISTICS
+    // =========================
 
-        /* BODY */
-
-        const tbody =
-            table.createTBody();
-
-        data.forEach(row => {
-
-            const tr =
-                tbody.insertRow();
-
-            let prev = null;
-            let lastTrend = '➡';
-
-            row.forEach((c, i) => {
-
-                const td =
-                    tr.insertCell();
-
-                /* LOCK COLUMNS 1-3 */
-
-                if (i < 3) {
-                    td.textContent = c;
-                    return;
-                }
-
-                /* NO DATA */
-
-                if (c === '') {
-
-                    td.textContent = '';
-
-                    prev = null;
-
-                    nodata++;
-
-                    return;
-                }
-
-                /* NUMBER */
-
-                const v =
-                    parseFloat(c);
-
-                if (isNaN(v)) {
-
-                    td.textContent = c;
-
-                    return;
-                }
-
-                /* FIRST VALUE */
-
-                if (prev === null) {
-
-                    td.textContent =
-                        '■ ' + v.toFixed(4);
-
-                    td.className = 'same';
-
-                    same++;
-                }
-
-                /* UP */
-
-                else if (v > prev) {
-
-                    td.textContent =
-                        '▲ ' + v.toFixed(4);
-
-                    td.className = 'up';
-
-                    up++;
-
-                    lastTrend = '📈';
-                }
-
-                /* DOWN */
-
-                else if (v < prev) {
-
-                    td.textContent =
-                        '▼ ' + v.toFixed(4);
-
-                    td.className = 'down';
-
-                    down++;
-
-                    lastTrend = '📉';
-                }
-
-                /* SAME */
-
-                else {
-
-                    td.textContent =
-                        '■ ' + v.toFixed(4);
-
-                    td.className = 'same';
-
-                    same++;
-                }
-
-                prev = v;
-            });
-
-            /* TREND */
-
-            const trendCell =
-                tr.insertCell();
-
-            trendCell.textContent =
-                lastTrend;
-
-            trendCell.className =
-                'trend-column';
-        });
-
-        /* STATISTICS */
-
-        document.getElementById('stats').innerHTML =
-            `Total Funds: ${data.length}
-             &nbsp;&nbsp; 🟢 Up: ${up}
-             &nbsp;&nbsp; 🔴 Down: ${down}
-             &nbsp;&nbsp; ⚪ Same: ${same}
-             &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        const errorBox =
-            document.getElementById('error');
-
-        errorBox.style.display = 'block';
-
-        errorBox.textContent =
-            'Error: ' + error.message;
-
-        document.getElementById('stats').textContent =
-            'Unable to load fund data.';
-    }
+    document.getElementById('stats').innerHTML =
+        `Total Funds: ${data.length}
+        &nbsp;&nbsp; 🟢 Up: ${up}
+        &nbsp;&nbsp; 🔴 Down: ${down}
+        &nbsp;&nbsp; ⚪ Same: ${same}
+        &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
 }
+
+
+// =========================
+// LOAD CSV
+// =========================
 
 loadCSV();

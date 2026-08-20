@@ -1,83 +1,163 @@
 async function loadCSV() {
-    const response = await fetch('MonitoredFund.csv');
-    const text = await response.text();
+    const res = await fetch("MonitoredFund.csv?v=" + Date.now());
+    const txt = await res.text();
 
-    const rows = text.trim().split(/\r?\n/).map(r => r.split(','));
+    const rows = txt.trim()
+        .split(/\r?\n/)
+        .map(r => r.split(','));
 
-    const headers = rows[0];
+    const head = rows[0];
     const data = rows.slice(1);
 
-    const thead = document.querySelector('#fundTable thead');
-    const tbody = document.querySelector('#fundTable tbody');
+    let up = 0;
+    let down = 0;
+    let same = 0;
+    let nodata = 0;
 
-    // Build header
-    const headerRow = document.createElement('tr');
-    headers.forEach((h, idx) => {
-        const th = document.createElement('th');
+    const t = document.getElementById('fundTable');
+
+    // Clear existing table
+    t.innerHTML = "";
+
+    // =========================
+    // HEADER
+    // =========================
+
+    const hr = t.createTHead().insertRow();
+
+    head.forEach((h, i) => {
+        let th = document.createElement('th');
         th.textContent = h;
-        if (idx === 1) th.classList.add('fund-name');
-        headerRow.appendChild(th);
+
+        if (i === head.length - 1) {
+            th.className = 'latest';
+        }
+
+        hr.appendChild(th);
     });
-    thead.appendChild(headerRow);
 
-    let upCount = 0;
-    let downCount = 0;
-    let noDataCount = 0;
+    // Add Trend header
+    let trendHeader = document.createElement('th');
+    trendHeader.textContent = 'Trend';
+    trendHeader.className = 'trend-column';
+    hr.appendChild(trendHeader);
 
-    // Build body
-    data.forEach(row => {
-        const tr = document.createElement('tr');
+    // =========================
+    // BODY
+    // =========================
 
-        let previousValue = null;
+    const tb = t.createTBody();
 
-        row.forEach((cell, idx) => {
-            const td = document.createElement('td');
-            td.textContent = cell;
+    data.forEach(r => {
 
-            if (idx === 1) td.classList.add('fund-name');
+        let tr = tb.insertRow();
 
-            // Price columns start from index 2
-            if (idx >= 2) {
-                const value = parseFloat(cell);
+        let prev = null;
+        let lastTrend = '➡';
 
-                if (cell === '' || isNaN(value)) {
-                    td.classList.add('no-data');
-                    noDataCount++;
-                } else {
-                    if (previousValue !== null) {
-                        if (value > previousValue) {
-                            td.classList.add('up');
-                            upCount++;
-                        } else if (value < previousValue) {
-                            td.classList.add('down');
-                            downCount++;
-                        }
-                    }
-                    previousValue = value;
-                }
+        r.forEach((c, i) => {
+
+            let td = tr.insertCell();
+
+            // =========================
+            // COLUMNS 1, 2 AND 3
+            // =========================
+            // These columns are locked/frozen
+            // =========================
+
+            if (i < 3) {
+                td.textContent = c;
+                return;
             }
 
-            tr.appendChild(td);
+            // =========================
+            // NO DATA
+            // =========================
+
+            if (c === '') {
+                td.textContent = '';
+                prev = null;
+                nodata++;
+                return;
+            }
+
+            // =========================
+            // NUMERIC VALUE
+            // =========================
+
+            let v = parseFloat(c);
+
+            if (isNaN(v)) {
+                td.textContent = c;
+                return;
+            }
+
+            // =========================
+            // COMPARE WITH PREVIOUS VALUE
+            // =========================
+
+            if (prev === null) {
+
+                td.textContent = '■ ' + v.toFixed(4);
+                td.className = 'same';
+
+                same++;
+
+            }
+            else if (v > prev) {
+
+                td.textContent = '▲ ' + v.toFixed(4);
+                td.className = 'up';
+
+                up++;
+                lastTrend = '📈';
+
+            }
+            else if (v < prev) {
+
+                td.textContent = '▼ ' + v.toFixed(4);
+                td.className = 'down';
+
+                down++;
+                lastTrend = '📉';
+
+            }
+            else {
+
+                td.textContent = '■ ' + v.toFixed(4);
+                td.className = 'same';
+
+                same++;
+            }
+
+            prev = v;
         });
 
-        tbody.appendChild(tr);
+        // =========================
+        // TREND COLUMN
+        // =========================
+
+        let trendCell = tr.insertCell();
+
+        trendCell.textContent = lastTrend;
+        trendCell.className = 'trend-column';
     });
 
-    document.getElementById('summary').innerHTML = `
-        🟢 Funds Up: ${upCount} &nbsp;&nbsp;
-        🔴 Funds Down: ${downCount} &nbsp;&nbsp;
-        ⚫ No Data: ${noDataCount}
-    `;
+    // =========================
+    // STATISTICS
+    // =========================
 
-    // Search filter
-    document.getElementById('searchBox').addEventListener('input', function() {
-        const term = this.value.toLowerCase();
-
-        [...tbody.rows].forEach(r => {
-            const fundName = r.cells[1].textContent.toLowerCase();
-            r.style.display = fundName.includes(term) ? '' : 'none';
-        });
-    });
+    document.getElementById('stats').innerHTML =
+        `Total Funds: ${data.length}
+        &nbsp;&nbsp; 🟢 Up: ${up}
+        &nbsp;&nbsp; 🔴 Down: ${down}
+        &nbsp;&nbsp; ⚪ Same: ${same}
+        &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
 }
+
+
+// =========================
+// LOAD CSV
+// =========================
 
 loadCSV();

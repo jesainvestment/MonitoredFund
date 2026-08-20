@@ -1,95 +1,122 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f6f9;
-}
-
-.container {
-    padding: 20px;
-}
-
-h1 {
-    margin-bottom: 10px;
-}
-
-#summary {
-    margin-bottom: 15px;
-    font-weight: bold;
-}
-
-#searchBox {
-    padding: 10px;
-    width: 300px;
-    max-width: 100%;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+/* =========================================
+   TABLE SCROLLING
+   ========================================= */
 
 .table-container {
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
     max-height: 80vh;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #ddd;
 }
 
-table {
+
+/* =========================================
+   TABLE
+   ========================================= */
+
+#fundTable {
     border-collapse: collapse;
-    width: 100%;
-    min-width: 1200px;
+    width: max-content;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
+#fundTable th,
+#fundTable td {
+    padding: 6px 10px;
     white-space: nowrap;
 }
 
-th {
+
+/* =========================================
+   COLUMN 1 - LOCKED
+   ========================================= */
+
+#fundTable th:nth-child(1),
+#fundTable td:nth-child(1) {
+    position: sticky;
+    left: 0;
+
+    width: 100px;
+    min-width: 100px;
+
+    z-index: 2;
+}
+
+
+/* =========================================
+   COLUMN 2 - LOCKED
+   ========================================= */
+
+#fundTable th:nth-child(2),
+#fundTable td:nth-child(2) {
+    position: sticky;
+    left: 100px;
+
+    width: 100px;
+    min-width: 100px;
+
+    z-index: 2;
+}
+
+
+/* =========================================
+   COLUMN 3 - LOCKED
+   ========================================= */
+
+#fundTable th:nth-child(3),
+#fundTable td:nth-child(3) {
+    position: sticky;
+    left: 200px;
+
+    width: 120px;
+    min-width: 120px;
+
+    z-index: 2;
+}
+
+
+/* =========================================
+   HEADER
+   ========================================= */
+
+#fundTable th {
     position: sticky;
     top: 0;
-    background: #1f2937;
-    color: white;
     z-index: 3;
 }
 
-td.fund-name, th.fund-name {
-    position: sticky;
-    left: 0;
-    background: white;
-    text-align: left;
-    z-index: 2;
-    min-width: 250px;
-}
 
-th.fund-name {
-    background: #1f2937;
-    color: white;
+/* =========================================
+   LOCKED HEADER CELLS
+   ========================================= */
+
+#fundTable th:nth-child(1),
+#fundTable th:nth-child(2),
+#fundTable th:nth-child(3) {
     z-index: 4;
 }
 
-tr:nth-child(even) td {
-    background: #fafafa;
+
+/* =========================================
+   TREND COLUMN
+   ========================================= */
+
+#fundTable .trend-column {
+    text-align: center;
+    font-size: 18px;
 }
 
-tr:hover td {
-    background: #eef5ff;
+
+/* =========================================
+   PRICE INDICATORS
+   ========================================= */
+
+#fundTable .up {
+    color: green;
 }
 
-.up {
-    background-color: #d1fae5 !important;
-    color: #065f46;
-    font-weight: bold;
+#fundTable .down {
+    color: red;
 }
 
-.down {
-    background-color: #fee2e2 !important;
-    color: #991b1b;
-    font-weight: bold;
-}
-
-.no-data {
+#fundTable .same {
     color: black;
 }

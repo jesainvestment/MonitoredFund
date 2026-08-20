@@ -1,90 +1,121 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f5f5f5;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+#stats {
+    margin: 10px 0;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    font-size: 15px;
+}
+
 .table-container {
     width: 100%;
+    max-height: 80vh;
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 80vh;
+    background: white;
+    border: 1px solid #ccc;
 }
 
 #fundTable {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: max-content;
+    min-width: 100%;
 }
 
 #fundTable th,
 #fundTable td {
-    padding: 6px 10px;
+    padding: 7px 10px;
     white-space: nowrap;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    background: white;
 }
 
+/* Header */
+#fundTable th {
+    position: sticky;
+    top: 0;
+    background: #eeeeee;
+    font-weight: bold;
+    z-index: 3;
+}
 
 /* COLUMN 1 */
 #fundTable th:nth-child(1),
 #fundTable td:nth-child(1) {
     position: sticky;
     left: 0;
-    min-width: 100px;
     width: 100px;
+    min-width: 100px;
     background: white;
-    z-index: 2;
+    z-index: 4;
 }
-
 
 /* COLUMN 2 */
 #fundTable th:nth-child(2),
 #fundTable td:nth-child(2) {
     position: sticky;
     left: 100px;
-    min-width: 100px;
     width: 100px;
+    min-width: 100px;
     background: white;
-    z-index: 2;
+    z-index: 4;
 }
-
 
 /* COLUMN 3 */
 #fundTable th:nth-child(3),
 #fundTable td:nth-child(3) {
     position: sticky;
     left: 200px;
-    min-width: 120px;
     width: 120px;
+    min-width: 120px;
     background: white;
-    z-index: 2;
-}
-
-
-/* HEADER */
-#fundTable th {
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 3;
-}
-
-
-/* LOCKED HEADER */
-#fundTable th:nth-child(1),
-#fundTable th:nth-child(2),
-#fundTable th:nth-child(3) {
     z-index: 4;
 }
 
-
-/* TREND */
-.trend-column {
-    text-align: center;
+/* Frozen header cells */
+#fundTable th:nth-child(1),
+#fundTable th:nth-child(2),
+#fundTable th:nth-child(3) {
+    background: #eeeeee;
+    z-index: 6;
 }
 
+/* Trend */
+#fundTable .trend-column {
+    text-align: center;
+    min-width: 60px;
+}
 
-/* UP / DOWN / SAME */
-.up {
+/* Price movement */
+#fundTable .up {
     color: green;
 }
 
-.down {
+#fundTable .down {
     color: red;
 }
 
-.same {
+#fundTable .same {
     color: black;
+}
+
+/* Error */
+#error {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    color: #b00020;
+    background: #ffe5e5;
+    border: 1px solid #ff9999;
 }

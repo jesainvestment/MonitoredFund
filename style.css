@@ -38,37 +38,23 @@ th{
 }
 
 
-/* =================================
-   FIRST 4 COLUMNS
-   ================================= */
+/* ==============================
+   LOCKED FIRST 4 COLUMNS
+   ============================== */
 
 th:nth-child(1),
-td:nth-child(1){
-    position:sticky;
-    left:0;
-    background:#fff;
-}
-
+td:nth-child(1),
 th:nth-child(2),
-td:nth-child(2){
-    position:sticky;
-    background:#fff;
-}
-
+td:nth-child(2),
 th:nth-child(3),
-td:nth-child(3){
-    position:sticky;
-    background:#fff;
-}
-
+td:nth-child(3),
 th:nth-child(4),
 td:nth-child(4){
     position:sticky;
-    background:#fff;
 }
 
 
-/* Locked headers stay on top */
+/* Header of locked columns */
 
 th:nth-child(1),
 th:nth-child(2),
@@ -79,7 +65,18 @@ th:nth-child(4){
 }
 
 
-/* Existing colours */
+/* Body of locked columns */
+
+td:nth-child(1),
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4){
+    z-index:10;
+    background:#fff;
+}
+
+
+/* Existing price colours */
 
 .up{
     background:#d9f2d9

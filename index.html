@@ -187,25 +187,28 @@ async function loadCSV(){
 
         head.forEach((header,index)=>{
 
-            const th =
-                document.createElement("th");
+    const th =
+        document.createElement("th");
 
-            th.textContent =
-                header.trim();
+    /* Display Sequence as Seq. */
+    if(index === 0 && header.trim().toLowerCase() === "sequence"){
+        th.textContent = "Seq.";
+    }
+    else{
+        th.textContent = header.trim();
+    }
 
+    if(index === head.length-1){
 
-            if(index === head.length-1){
+        th.classList.add(
+            "latest"
+        );
 
-                th.classList.add(
-                    "latest"
-                );
+    }
 
-            }
+    headerRow.appendChild(th);
 
-
-            headerRow.appendChild(th);
-
-        });
+});
 
 
         /*

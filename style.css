@@ -1,17 +1,9 @@
-/* =========================================
-   TABLE SCROLLING
-   ========================================= */
-
 .table-container {
+    width: 100%;
     overflow-x: auto;
     overflow-y: auto;
     max-height: 80vh;
 }
-
-
-/* =========================================
-   TABLE
-   ========================================= */
 
 #fundTable {
     border-collapse: collapse;
@@ -25,69 +17,52 @@
 }
 
 
-/* =========================================
-   COLUMN 1 - LOCKED
-   ========================================= */
-
+/* COLUMN 1 */
 #fundTable th:nth-child(1),
 #fundTable td:nth-child(1) {
     position: sticky;
     left: 0;
-
-    width: 100px;
     min-width: 100px;
-
+    width: 100px;
+    background: white;
     z-index: 2;
 }
 
 
-/* =========================================
-   COLUMN 2 - LOCKED
-   ========================================= */
-
+/* COLUMN 2 */
 #fundTable th:nth-child(2),
 #fundTable td:nth-child(2) {
     position: sticky;
     left: 100px;
-
-    width: 100px;
     min-width: 100px;
-
+    width: 100px;
+    background: white;
     z-index: 2;
 }
 
 
-/* =========================================
-   COLUMN 3 - LOCKED
-   ========================================= */
-
+/* COLUMN 3 */
 #fundTable th:nth-child(3),
 #fundTable td:nth-child(3) {
     position: sticky;
     left: 200px;
-
-    width: 120px;
     min-width: 120px;
-
+    width: 120px;
+    background: white;
     z-index: 2;
 }
 
 
-/* =========================================
-   HEADER
-   ========================================= */
-
+/* HEADER */
 #fundTable th {
     position: sticky;
     top: 0;
+    background: white;
     z-index: 3;
 }
 
 
-/* =========================================
-   LOCKED HEADER CELLS
-   ========================================= */
-
+/* LOCKED HEADER */
 #fundTable th:nth-child(1),
 #fundTable th:nth-child(2),
 #fundTable th:nth-child(3) {
@@ -95,28 +70,21 @@
 }
 
 
-/* =========================================
-   TREND COLUMN
-   ========================================= */
-
-#fundTable .trend-column {
+/* TREND */
+.trend-column {
     text-align: center;
-    font-size: 18px;
 }
 
 
-/* =========================================
-   PRICE INDICATORS
-   ========================================= */
-
-#fundTable .up {
+/* UP / DOWN / SAME */
+.up {
     color: green;
 }
 
-#fundTable .down {
+.down {
     color: red;
 }
 
-#fundTable .same {
+.same {
     color: black;
 }

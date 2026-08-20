@@ -1,163 +1,214 @@
 async function loadCSV() {
-    const res = await fetch("MonitoredFund.csv?v=" + Date.now());
-    const txt = await res.text();
 
-    const rows = txt.trim()
-        .split(/\r?\n/)
-        .map(r => r.split(','));
+    try {
 
-    const head = rows[0];
-    const data = rows.slice(1);
+        const res = await fetch("MonitoredFund.csv?v=" + Date.now());
 
-    let up = 0;
-    let down = 0;
-    let same = 0;
-    let nodata = 0;
-
-    const t = document.getElementById('fundTable');
-
-    // Clear existing table
-    t.innerHTML = "";
-
-    // =========================
-    // HEADER
-    // =========================
-
-    const hr = t.createTHead().insertRow();
-
-    head.forEach((h, i) => {
-        let th = document.createElement('th');
-        th.textContent = h;
-
-        if (i === head.length - 1) {
-            th.className = 'latest';
+        if (!res.ok) {
+            throw new Error("Cannot load MonitoredFund.csv");
         }
 
-        hr.appendChild(th);
-    });
+        const txt = await res.text();
 
-    // Add Trend header
-    let trendHeader = document.createElement('th');
-    trendHeader.textContent = 'Trend';
-    trendHeader.className = 'trend-column';
-    hr.appendChild(trendHeader);
+        const rows = txt.trim()
+            .split(/\r?\n/)
+            .map(r => r.split(','));
 
-    // =========================
-    // BODY
-    // =========================
+        if (rows.length === 0) {
+            throw new Error("CSV file is empty");
+        }
 
-    const tb = t.createTBody();
+        const head = rows[0];
+        const data = rows.slice(1);
 
-    data.forEach(r => {
+        let up = 0;
+        let down = 0;
+        let same = 0;
+        let nodata = 0;
 
-        let tr = tb.insertRow();
+        const t = document.getElementById('fundTable');
 
-        let prev = null;
-        let lastTrend = '➡';
+        if (!t) {
+            throw new Error("Cannot find table with id='fundTable'");
+        }
 
-        r.forEach((c, i) => {
+        // Clear old table
+        t.innerHTML = "";
 
-            let td = tr.insertCell();
+        // =========================
+        // HEADER
+        // =========================
 
-            // =========================
-            // COLUMNS 1, 2 AND 3
-            // =========================
-            // These columns are locked/frozen
-            // =========================
+        const hr = t.createTHead().insertRow();
 
-            if (i < 3) {
-                td.textContent = c;
-                return;
+        head.forEach((h, i) => {
+
+            let th = document.createElement('th');
+
+            th.textContent = h;
+
+            if (i === head.length - 1) {
+                th.className = 'latest';
             }
 
-            // =========================
-            // NO DATA
-            // =========================
-
-            if (c === '') {
-                td.textContent = '';
-                prev = null;
-                nodata++;
-                return;
-            }
-
-            // =========================
-            // NUMERIC VALUE
-            // =========================
-
-            let v = parseFloat(c);
-
-            if (isNaN(v)) {
-                td.textContent = c;
-                return;
-            }
-
-            // =========================
-            // COMPARE WITH PREVIOUS VALUE
-            // =========================
-
-            if (prev === null) {
-
-                td.textContent = '■ ' + v.toFixed(4);
-                td.className = 'same';
-
-                same++;
-
-            }
-            else if (v > prev) {
-
-                td.textContent = '▲ ' + v.toFixed(4);
-                td.className = 'up';
-
-                up++;
-                lastTrend = '📈';
-
-            }
-            else if (v < prev) {
-
-                td.textContent = '▼ ' + v.toFixed(4);
-                td.className = 'down';
-
-                down++;
-                lastTrend = '📉';
-
-            }
-            else {
-
-                td.textContent = '■ ' + v.toFixed(4);
-                td.className = 'same';
-
-                same++;
-            }
-
-            prev = v;
+            hr.appendChild(th);
         });
 
+        // Trend header
+        let th = document.createElement('th');
+        th.textContent = 'Trend';
+        th.className = 'trend-column';
+
+        hr.appendChild(th);
+
+
         // =========================
-        // TREND COLUMN
+        // BODY
         // =========================
 
-        let trendCell = tr.insertCell();
+        const tb = t.createTBody();
 
-        trendCell.textContent = lastTrend;
-        trendCell.className = 'trend-column';
-    });
+        data.forEach(r => {
 
-    // =========================
-    // STATISTICS
-    // =========================
+            let tr = tb.insertRow();
 
-    document.getElementById('stats').innerHTML =
-        `Total Funds: ${data.length}
-        &nbsp;&nbsp; 🟢 Up: ${up}
-        &nbsp;&nbsp; 🔴 Down: ${down}
-        &nbsp;&nbsp; ⚪ Same: ${same}
-        &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
+            let prev = null;
+            let lastTrend = '➡';
+
+            r.forEach((c, i) => {
+
+                let td = tr.insertCell();
+
+                // =========================
+                // LOCKED COLUMNS 1-3
+                // =========================
+
+                if (i < 3) {
+                    td.textContent = c;
+                    return;
+                }
+
+
+                // =========================
+                // NO DATA
+                // =========================
+
+                if (c === '') {
+
+                    td.textContent = '';
+
+                    prev = null;
+
+                    nodata++;
+
+                    return;
+                }
+
+
+                // =========================
+                // NUMBER
+                // =========================
+
+                let v = parseFloat(c);
+
+                if (isNaN(v)) {
+
+                    td.textContent = c;
+
+                    return;
+                }
+
+
+                // =========================
+                // TREND
+                // =========================
+
+                if (prev === null) {
+
+                    td.textContent = '■ ' + v.toFixed(4);
+
+                    td.className = 'same';
+
+                    same++;
+
+                }
+                else if (v > prev) {
+
+                    td.textContent = '▲ ' + v.toFixed(4);
+
+                    td.className = 'up';
+
+                    up++;
+
+                    lastTrend = '📈';
+
+                }
+                else if (v < prev) {
+
+                    td.textContent = '▼ ' + v.toFixed(4);
+
+                    td.className = 'down';
+
+                    down++;
+
+                    lastTrend = '📉';
+
+                }
+                else {
+
+                    td.textContent = '■ ' + v.toFixed(4);
+
+                    td.className = 'same';
+
+                    same++;
+                }
+
+                prev = v;
+
+            });
+
+
+            // =========================
+            // TREND COLUMN
+            // =========================
+
+            let trend = tr.insertCell();
+
+            trend.textContent = lastTrend;
+
+            trend.className = 'trend-column';
+
+        });
+
+
+        // =========================
+        // STATISTICS
+        // =========================
+
+        const stats = document.getElementById('stats');
+
+        if (stats) {
+
+            stats.innerHTML =
+                `Total Funds: ${data.length}
+                &nbsp;&nbsp; 🟢 Up: ${up}
+                &nbsp;&nbsp; 🔴 Down: ${down}
+                &nbsp;&nbsp; ⚪ Same: ${same}
+                &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        document.body.innerHTML +=
+            `<div style="color:red;padding:20px;font-size:18px;">
+                Error: ${error.message}
+            </div>`;
+    }
 }
 
-
-// =========================
-// LOAD CSV
-// =========================
 
 loadCSV();

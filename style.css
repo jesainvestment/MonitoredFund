@@ -38,39 +38,42 @@ th{
 }
 
 
-/* ==================================================
-   LOCKED COLUMNS
-   Fund / High / Low
-   ================================================== */
+/* FIRST 3 LOCKED COLUMNS */
 
-.locked-fund,
-.locked-high,
-.locked-low{
-    position:sticky !important;
+th:nth-child(1),
+td:nth-child(1){
+    position:sticky;
+    left:0;
     background:#fff;
+    z-index:10;
+}
+
+th:nth-child(2),
+td:nth-child(2){
+    position:sticky;
+    background:#fff;
+    z-index:10;
+}
+
+th:nth-child(3),
+td:nth-child(3){
+    position:sticky;
+    background:#fff;
+    z-index:10;
 }
 
 
-/* Header versions must remain above body cells */
+/* Keep header above locked body cells */
 
-th.locked-fund,
-th.locked-high,
-th.locked-low{
-    z-index:10 !important;
+th:nth-child(1),
+th:nth-child(2),
+th:nth-child(3){
+    z-index:20;
     background:#e6e6e6;
 }
 
 
-/* Body locked columns */
-
-td.locked-fund,
-td.locked-high,
-td.locked-low{
-    z-index:6 !important;
-}
-
-
-/* Keep existing colours working */
+/* Existing colours */
 
 .up{
     background:#d9f2d9

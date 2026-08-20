@@ -38,36 +38,42 @@ th{
 }
 
 
-/* FIRST 3 LOCKED COLUMNS */
+/* =================================
+   FIRST 4 COLUMNS
+   ================================= */
 
 th:nth-child(1),
 td:nth-child(1){
     position:sticky;
     left:0;
     background:#fff;
-    z-index:10;
 }
 
 th:nth-child(2),
 td:nth-child(2){
     position:sticky;
     background:#fff;
-    z-index:10;
 }
 
 th:nth-child(3),
 td:nth-child(3){
     position:sticky;
     background:#fff;
-    z-index:10;
+}
+
+th:nth-child(4),
+td:nth-child(4){
+    position:sticky;
+    background:#fff;
 }
 
 
-/* Keep header above locked body cells */
+/* Locked headers stay on top */
 
 th:nth-child(1),
 th:nth-child(2),
-th:nth-child(3){
+th:nth-child(3),
+th:nth-child(4){
     z-index:20;
     background:#e6e6e6;
 }

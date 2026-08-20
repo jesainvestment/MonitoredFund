@@ -1,34 +1,495 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>Fund Monitor Test</title>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+
+<title>Fund Monitoring Dashboard</title>
+
+<style>
+
+body{
+    font-family:Calibri,Arial;
+    background:#f5f5f5;
+    margin:16px
+}
+
+#stats{
+    margin:10px 0;
+    padding:10px;
+    background:#fff;
+    border:1px solid #ccc;
+    font-weight:bold
+}
+
+.table-wrap{
+    overflow:auto;
+    max-height:85vh;
+    background:#fff;
+    border:1px solid #ccc
+}
+
+table{
+    border-collapse:collapse;
+    min-width:1400px
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:6px 10px;
+    white-space:nowrap
+}
+
+th{
+    background:#e6e6e6;
+    position:sticky;
+    top:0;
+    z-index:5
+}
+
+.up{
+    background:#d9f2d9
+}
+
+.down{
+    background:#ffd9d9
+}
+
+.same{
+    background:#fff
+}
+
+.latest{
+    background:#fff3b0 !important
+}
+
+</style>
+
 </head>
+
 
 <body>
 
-<h1>Fund Monitor Test</h1>
+<h2>Fund Monitoring Dashboard</h2>
 
 <div id="stats">
-HTML IS WORKING
+Loading...
 </div>
 
-<table border="1">
-<tr>
-<th>Sequence</th>
-<th>Fund</th>
-<th>High</th>
-<th>Low</th>
-</tr>
+<div class="table-wrap">
 
-<tr>
-<td>1</td>
-<td>BGF World Gold Fund</td>
-<td>20.1600 @02/03/26</td>
-<td>12.5300 @17/07/26</td>
-</tr>
+<table id="fundTable">
+
+<thead></thead>
+
+<tbody></tbody>
 
 </table>
 
+</div>
+
+
+<script>
+
+async function loadCSV(){
+
+    const stats =
+        document.getElementById("stats");
+
+    try{
+
+        stats.textContent =
+            "Loading MonitoredFund.csv...";
+
+
+        const response =
+            await fetch(
+                "MonitoredFund.csv?v=" +
+                Date.now()
+            );
+
+
+        if(!response.ok){
+
+            throw new Error(
+                "CSV file not found. HTTP " +
+                response.status
+            );
+
+        }
+
+
+        const text =
+            await response.text();
+
+
+        if(!text.trim()){
+
+            throw new Error(
+                "CSV file is empty"
+            );
+
+        }
+
+
+        /*
+         * Parse CSV
+         */
+
+        const lines =
+            text.trim().split(/\r?\n/);
+
+
+        const rows =
+            lines.map(line =>
+                line.split(",")
+            );
+
+
+        const head = rows[0];
+
+        const data = rows.slice(1);
+
+
+        /*
+         * Statistics
+         */
+
+        let up = 0;
+        let down = 0;
+        let same = 0;
+        let nodata = 0;
+
+
+        const table =
+            document.getElementById(
+                "fundTable"
+            );
+
+
+        table.innerHTML = "";
+
+
+        /*
+         * HEADER
+         */
+
+        const thead =
+            table.createTHead();
+
+        const headerRow =
+            thead.insertRow();
+
+
+        head.forEach((header,index)=>{
+
+            const th =
+                document.createElement("th");
+
+            th.textContent =
+                header.trim();
+
+
+            if(index === head.length-1){
+
+                th.classList.add(
+                    "latest"
+                );
+
+            }
+
+
+            headerRow.appendChild(th);
+
+        });
+
+
+        /*
+         * BODY
+         */
+
+        const tbody =
+            table.createTBody();
+
+
+        data.forEach(row=>{
+
+            if(row.length === 0)
+                return;
+
+
+            const tr =
+                tbody.insertRow();
+
+
+            let previous = null;
+
+            let trend = "➡";
+
+
+            /*
+             * FIRST 4 COLUMNS
+             *
+             * Sequence
+             * Fund
+             * High
+             * Low
+             *
+             * ALWAYS TEXT
+             */
+
+            for(let i=0;
+                i<head.length;
+                i++){
+
+                const td =
+                    tr.insertCell();
+
+
+                const value =
+                    (row[i] || "").trim();
+
+
+                if(i < 4){
+
+                    td.textContent =
+                        value;
+
+                    continue;
+
+                }
+
+
+                /*
+                 * PRICE COLUMNS
+                 */
+
+                if(value === "" ||
+                   value === "-"){
+
+                    td.textContent =
+                        "";
+
+                    previous =
+                        null;
+
+                    nodata++;
+
+                    continue;
+
+                }
+
+
+                const number =
+                    parseFloat(value);
+
+
+                if(isNaN(number)){
+
+                    td.textContent =
+                        value;
+
+                    continue;
+
+                }
+
+
+                if(previous === null){
+
+                    td.textContent =
+                        "■ " +
+                        number.toFixed(4);
+
+                    td.className =
+                        "same";
+
+                    same++;
+
+                }
+
+                else if(number > previous){
+
+                    td.textContent =
+                        "▲ " +
+                        number.toFixed(4);
+
+                    td.className =
+                        "up";
+
+                    up++;
+
+                    trend = "📈";
+
+                }
+
+                else if(number < previous){
+
+                    td.textContent =
+                        "▼ " +
+                        number.toFixed(4);
+
+                    td.className =
+                        "down";
+
+                    down++;
+
+                    trend = "📉";
+
+                }
+
+                else{
+
+                    td.textContent =
+                        "■ " +
+                        number.toFixed(4);
+
+                    td.className =
+                        "same";
+
+                    same++;
+
+                }
+
+
+                previous =
+                    number;
+
+            }
+
+
+            /*
+             * TREND
+             */
+
+            const trendCell =
+                tr.insertCell();
+
+            trendCell.textContent =
+                trend;
+
+        });
+
+
+        /*
+         * TREND HEADER
+         */
+
+        const trendHeader =
+            document.createElement("th");
+
+        trendHeader.textContent =
+            "Trend";
+
+        headerRow.appendChild(
+            trendHeader
+        );
+
+
+        /*
+         * STATISTICS
+         */
+
+        stats.innerHTML =
+            `Total Funds: ${data.length}
+             &nbsp;&nbsp; 🟢 Up: ${up}
+             &nbsp;&nbsp; 🔴 Down: ${down}
+             &nbsp;&nbsp; ⚪ Same: ${same}
+             &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
+
+
+        /*
+         * LOCK FIRST 4 COLUMNS
+         */
+
+        setTimeout(function(){
+
+            let left = 0;
+
+
+            for(let column=0;
+                column<4;
+                column++){
+
+                const cells =
+                    table.querySelectorAll(
+                        `th:nth-child(${column+1}),
+                         td:nth-child(${column+1})`
+                    );
+
+
+                if(cells.length === 0)
+                    continue;
+
+
+                const width =
+                    cells[0].getBoundingClientRect().width;
+
+
+                cells.forEach(cell=>{
+
+                    cell.style.position =
+                        "sticky";
+
+
+                    cell.style.left =
+                        left + "px";
+
+
+                    if(cell.tagName === "TH"){
+
+                        cell.style.top =
+                            "0";
+
+                        cell.style.zIndex =
+                            "20";
+
+                        cell.style.background =
+                            "#e6e6e6";
+
+                    }
+                    else{
+
+                        cell.style.zIndex =
+                            "10";
+
+                        cell.style.background =
+                            "#fff";
+
+                    }
+
+                });
+
+
+                left += width;
+
+            }
+
+        },100);
+
+    }
+
+
+    catch(error){
+
+        console.error(error);
+
+        stats.innerHTML =
+            "❌ ERROR: " +
+            error.message;
+
+    }
+
+}
+
+
+loadCSV();
+
+</script>
+
 </body>
+
 </html>

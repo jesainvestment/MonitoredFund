@@ -1,386 +1,156 @@
-async function loadCSV() {
+async function loadCSV(){
+const res=await fetch("MonitoredFund.csv?v="+Date.now());
+const txt=await res.text();
+const rows=txt.trim().split(/\r?\n/).map(r=>r.split(','));
+const head=rows[0],data=rows.slice(1);
 
-    try {
+let up=0,down=0,same=0,nodata=0;
 
-        const res = await fetch("MonitoredFund.csv?v=" + Date.now());
+const t=document.getElementById('fundTable');
 
-        if (!res.ok) {
-            throw new Error(
-                "MonitoredFund.csv could not be loaded. HTTP status: " + res.status
-            );
+const hr=t.createTHead().insertRow();
+
+head.forEach((h,i)=>{
+    let th=document.createElement('th');
+    th.textContent=h;
+
+    if(i===head.length-1)
+        th.className='latest';
+
+    hr.appendChild(th);
+});
+
+const tb=t.createTBody();
+
+data.forEach(r=>{
+
+    let tr=tb.insertRow();
+    let prev=null;
+    let lastTrend='➡';
+
+    r.forEach((c,i)=>{
+
+        let td=tr.insertCell();
+
+        /* FIRST 4 COLUMNS ARE TEXT */
+        if(i<4){
+            td.textContent=c;
+            return;
         }
 
-        const txt = await res.text();
-
-        if (!txt.trim()) {
-            throw new Error("MonitoredFund.csv is empty.");
+        if(c===''){
+            td.textContent='';
+            prev=null;
+            nodata++;
+            return;
         }
 
-        /*
-         * Simple CSV parser.
-         * Handles quoted fields and commas inside quotes.
-         */
-        function parseCSVLine(line) {
+        let v=parseFloat(c);
 
-            const result = [];
-            let current = "";
-            let insideQuotes = false;
-
-            for (let i = 0; i < line.length; i++) {
-
-                const ch = line[i];
-
-                if (ch === '"') {
-
-                    if (insideQuotes && line[i + 1] === '"') {
-                        current += '"';
-                        i++;
-                    } else {
-                        insideQuotes = !insideQuotes;
-                    }
-
-                } else if (ch === ',' && !insideQuotes) {
-
-                    result.push(current);
-                    current = "";
-
-                } else {
-
-                    current += ch;
-                }
-            }
-
-            result.push(current);
-
-            return result;
+        if(isNaN(v)){
+            td.textContent=c;
+            return;
         }
 
-
-        /*
-         * Remove BOM if present
-         */
-        const cleanText = txt.replace(/^\uFEFF/, "").trim();
-
-        const lines = cleanText.split(/\r?\n/);
-
-        const rows = lines.map(line => parseCSVLine(line));
-
-        const head = rows[0];
-        const data = rows.slice(1);
-
-
-        let up = 0;
-        let down = 0;
-        let same = 0;
-        let nodata = 0;
-
-
-        const table = document.getElementById("fundTable");
-
-        table.innerHTML = "";
-
-
-        /* ==========================================
-           HEADER
-           ========================================== */
-
-        const thead = table.createTHead();
-        const headerRow = thead.insertRow();
-
-
-        head.forEach((h, i) => {
-
-            const th = document.createElement("th");
-
-            th.textContent = h.trim();
-
-            if (i === head.length - 1) {
-                th.classList.add("latest");
-            }
-
-            headerRow.appendChild(th);
-
-        });
-
-
-        /* ==========================================
-           BODY
-           ========================================== */
-
-        const tbody = table.createTBody();
-
-
-        data.forEach(row => {
-
-            /*
-             * Ignore completely empty rows
-             */
-            if (row.length === 1 && row[0].trim() === "") {
-                return;
-            }
-
-
-            const tr = tbody.insertRow();
-
-            let previousValue = null;
-            let lastTrend = "➡";
-
-
-            /*
-             * Make row length equal to header length
-             */
-            while (row.length < head.length) {
-                row.push("");
-            }
-
-
-            row.forEach((cell, i) => {
-
-                const td = tr.insertCell();
-
-                const value = cell.trim();
-
-
-                /* ==================================
-                   FIRST 4 COLUMNS
-                   
-                   Sequence
-                   Fund
-                   High
-                   Low
-
-                   KEEP AS TEXT
-                   ================================== */
-
-                if (i < 4) {
-
-                    td.textContent = value;
-
-                    return;
-                }
-
-
-                /* ==================================
-                   DATE / PRICE COLUMNS
-                   ================================== */
-
-                if (value === "" || value === "-") {
-
-                    td.textContent = "";
-
-                    previousValue = null;
-
-                    nodata++;
-
-                    return;
-                }
-
-
-                const number = parseFloat(value);
-
-
-                if (isNaN(number)) {
-
-                    td.textContent = value;
-
-                    return;
-                }
-
-
-                /*
-                 * First numerical value
-                 */
-                if (previousValue === null) {
-
-                    td.textContent =
-                        "■ " + number.toFixed(4);
-
-                    td.className = "same";
-
-                    same++;
-
-                }
-
-
-                /*
-                 * Price increased
-                 */
-                else if (number > previousValue) {
-
-                    td.textContent =
-                        "▲ " + number.toFixed(4);
-
-                    td.className = "up";
-
-                    up++;
-
-                    lastTrend = "📈";
-
-                }
-
-
-                /*
-                 * Price decreased
-                 */
-                else if (number < previousValue) {
-
-                    td.textContent =
-                        "▼ " + number.toFixed(4);
-
-                    td.className = "down";
-
-                    down++;
-
-                    lastTrend = "📉";
-
-                }
-
-
-                /*
-                 * Price unchanged
-                 */
-                else {
-
-                    td.textContent =
-                        "■ " + number.toFixed(4);
-
-                    td.className = "same";
-
-                    same++;
-                }
-
-
-                previousValue = number;
-
-            });
-
-
-            /* ==================================
-               TREND
-               ================================== */
-
-            const trendCell = tr.insertCell();
-
-            trendCell.textContent = lastTrend;
-
-        });
-
-
-        /*
-         * Trend header
-         */
-        const trendHeader = document.createElement("th");
-
-        trendHeader.textContent = "Trend";
-
-        headerRow.appendChild(trendHeader);
-
-
-        /* ==========================================
-           STATISTICS
-           ========================================== */
-
-        document.getElementById("stats").innerHTML =
-            `Total Funds: ${data.length}
-             &nbsp;&nbsp; 🟢 Up: ${up}
-             &nbsp;&nbsp; 🔴 Down: ${down}
-             &nbsp;&nbsp; ⚪ Same: ${same}
-             &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
-
-
-        /* ==========================================
-           LOCK FIRST 4 COLUMNS
-           
-           Sequence
-           Fund
-           High
-           Low
-           ========================================== */
-
-        /*
-         * First get the actual width of each
-         * column from the header.
-         */
-
-        const headerCells =
-            headerRow.querySelectorAll("th");
-
-
-        if (headerCells.length >= 4) {
-
-            const width1 = headerCells[0].offsetWidth;
-            const width2 = headerCells[1].offsetWidth;
-            const width3 = headerCells[2].offsetWidth;
-
-
-            const leftPositions = [
-                0,
-                width1,
-                width1 + width2,
-                width1 + width2 + width3
-            ];
-
-
-            /*
-             * Apply sticky positioning
-             * to first four columns.
-             */
-
-            for (let column = 0; column < 4; column++) {
-
-                const cells = table.querySelectorAll(
-                    `th:nth-child(${column + 1}),
-                     td:nth-child(${column + 1})`
-                );
-
-
-                cells.forEach(cell => {
-
-                    cell.style.position = "sticky";
-
-                    cell.style.left =
-                        leftPositions[column] + "px";
-
-
-                    /*
-                     * Header must be above body.
-                     */
-
-                    if (cell.tagName === "TH") {
-
-                        cell.style.top = "0";
-
-                        cell.style.zIndex = "20";
-
-                        cell.style.background = "#e6e6e6";
-
-                    } else {
-
-                        cell.style.zIndex = "10";
-
-                        /*
-                         * Locked cells have white
-                         * background so scrolling
-                         * cells don't show through.
-                         */
-
-                        cell.style.background = "#fff";
-                    }
-
-                });
-            }
+        if(prev===null){
+            td.textContent='■ '+v.toFixed(4);
+            td.className='same';
+            same++;
+        }
+        else if(v>prev){
+            td.textContent='▲ '+v.toFixed(4);
+            td.className='up';
+            up++;
+            lastTrend='📈';
+        }
+        else if(v<prev){
+            td.textContent='▼ '+v.toFixed(4);
+            td.className='down';
+            down++;
+            lastTrend='📉';
+        }
+        else{
+            td.textContent='■ '+v.toFixed(4);
+            td.className='same';
+            same++;
         }
 
-    }
+        prev=v;
+    });
 
-    catch (error) {
+    let td=tr.insertCell();
+    td.textContent=lastTrend;
+});
 
-        console.error("Fund Monitor Error:", error);
+let th=document.createElement('th');
+th.textContent='Trend';
+hr.appendChild(th);
 
-        document.getElementById("stats").innerHTML =
-            "❌ ERROR: " + error.message;
-    }
+document.getElementById('stats').innerHTML=
+`Total Funds: ${data.length} &nbsp;&nbsp;
+🟢 Up: ${up} &nbsp;&nbsp;
+🔴 Down: ${down} &nbsp;&nbsp;
+⚪ Same: ${same} &nbsp;&nbsp;
+⚫ No Data: ${nodata}`;
+
+
+/* ==================================================
+   LOCK FIRST 4 COLUMNS
+   Sequence / Fund / High / Low
+   ================================================== */
+
+const col1Width=t.querySelector('th:nth-child(1)').offsetWidth;
+const col2Width=t.querySelector('th:nth-child(2)').offsetWidth;
+const col3Width=t.querySelector('th:nth-child(3)').offsetWidth;
+
+
+/* Sequence */
+
+t.querySelectorAll('th:nth-child(1),td:nth-child(1)').forEach(cell=>{
+    cell.style.position='sticky';
+    cell.style.left='0px';
+    cell.style.zIndex='10';
+    cell.style.background='#fff';
+});
+
+
+/* Fund */
+
+t.querySelectorAll('th:nth-child(2),td:nth-child(2)').forEach(cell=>{
+    cell.style.position='sticky';
+    cell.style.left=col1Width+'px';
+    cell.style.zIndex='10';
+    cell.style.background='#fff';
+});
+
+
+/* High */
+
+t.querySelectorAll('th:nth-child(3),td:nth-child(3)').forEach(cell=>{
+    cell.style.position='sticky';
+    cell.style.left=(col1Width+col2Width)+'px';
+    cell.style.zIndex='10';
+    cell.style.background='#fff';
+});
+
+
+/* Low */
+
+t.querySelectorAll('th:nth-child(4),td:nth-child(4)').forEach(cell=>{
+    cell.style.position='sticky';
+    cell.style.left=(col1Width+col2Width+col3Width)+'px';
+    cell.style.zIndex='10';
+    cell.style.background='#fff';
+});
+
+
+/* Make locked headers stay above everything */
+
+t.querySelectorAll('th:nth-child(1),th:nth-child(2),th:nth-child(3),th:nth-child(4)').forEach(cell=>{
+    cell.style.zIndex='20';
+    cell.style.background='#e6e6e6';
+});
+
 }
-
 
 loadCSV();

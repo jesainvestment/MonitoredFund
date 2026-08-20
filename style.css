@@ -1,8 +1,4 @@
-body{
-    font-family:Calibri,Arial;
-    background:#f5f5f5;
-    margin:16px
-}
+body{font-family:Calibri,Arial;background:#f5f5f5;margin:16px}
 
 #stats{
     margin:10px 0;
@@ -39,22 +35,32 @@ th{
 
 
 /* ==============================
-   LOCKED FIRST 4 COLUMNS
+   LOCK FIRST 4 COLUMNS
    ============================== */
 
 th:nth-child(1),
-td:nth-child(1),
+td:nth-child(1){
+    position:sticky;
+    left:0;
+}
+
 th:nth-child(2),
-td:nth-child(2),
+td:nth-child(2){
+    position:sticky;
+}
+
 th:nth-child(3),
-td:nth-child(3),
+td:nth-child(3){
+    position:sticky;
+}
+
 th:nth-child(4),
 td:nth-child(4){
     position:sticky;
 }
 
 
-/* Header of locked columns */
+/* Header */
 
 th:nth-child(1),
 th:nth-child(2),
@@ -65,7 +71,7 @@ th:nth-child(4){
 }
 
 
-/* Body of locked columns */
+/* Body */
 
 td:nth-child(1),
 td:nth-child(2),
@@ -76,20 +82,12 @@ td:nth-child(4){
 }
 
 
-/* Existing price colours */
+/* Original Phase 5 colours */
 
-.up{
-    background:#d9f2d9
-}
+.up{background:#d9f2d9}
 
-.down{
-    background:#ffd9d9
-}
+.down{background:#ffd9d9}
 
-.same{
-    background:#fff
-}
+.same{background:#fff}
 
-.latest{
-    background:#fff3b0!important
-}
+.latest{background:#fff3b0!important}

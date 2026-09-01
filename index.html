@@ -92,6 +92,14 @@
     .latest {
         background: #fff3b0 !important;
     }
+
+    /* Column 2:
+       Text inside final brackets is bold dark blue */
+
+    .fund-bracket {
+        font-weight: bold;
+        color: #00008B;
+    }
 </style>
 ```
 
@@ -113,11 +121,17 @@
 </button>
 
 <div class="table-wrap">
+
     <table id="fundTable">
+
         <thead></thead>
+
         <tbody></tbody>
+
     </table>
+
 </div>
+
 
 <script>
 
@@ -125,15 +139,19 @@
 
     let columnsVisible = false;
 
+
     function toggleColumns() {
 
         columnsVisible = !columnsVisible;
 
-        const table = document.getElementById("fundTable");
-        const button = document.getElementById("toggleColumns");
+        const table =
+            document.getElementById("fundTable");
+
+        const button =
+            document.getElementById("toggleColumns");
+
 
         /*
-         * Columns are zero-based:
          * Column 3 = index 2
          * Column 4 = index 3
          */
@@ -143,131 +161,314 @@
             "th:nth-child(4), td:nth-child(4)"
         );
 
+
         cells.forEach(cell => {
 
             if (columnsVisible) {
-                cell.classList.remove("hidden-column");
+
+                cell.classList.remove(
+                    "hidden-column"
+                );
+
             } else {
-                cell.classList.add("hidden-column");
-            }
 
-        });
-
-        if (columnsVisible) {
-            button.textContent = "Hide High / Low";
-        } else {
-            button.textContent = "Show High / Low";
-        }
-
-        /*
-         * Recalculate sticky columns
-         * after changing visibility.
-         */
-
-        setTimeout(lockFirstColumns, 50);
-    }
-
-
-    async function loadCSV() {
-
-        const stats = document.getElementById("stats");
-
-        try {
-
-            const response = await fetch(
-                "MonitoredFund.csv?v=" + Date.now()
-            );
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "CSV file not found. HTTP " + response.status
+                cell.classList.add(
+                    "hidden-column"
                 );
 
             }
 
-            const text = await response.text();
+        });
 
-            if (!text.trim()) {
 
-                throw new Error("CSV file is empty");
+        if (columnsVisible) {
+
+            button.textContent =
+                "Hide High / Low";
+
+        } else {
+
+            button.textContent =
+                "Show High / Low";
+
+        }
+
+
+        /*
+         * Recalculate sticky columns
+         */
+
+        setTimeout(
+            lockFirstColumns,
+            50
+        );
+
+    }
+
+
+
+    /*
+     * Format Column 2
+     *
+     * Only the FINAL ( ... ) section
+     * is made bold and dark blue.
+     *
+     * Example:
+     *
+     * BGF World Gold Fund (A2 SGD)
+     *
+     * BGF World Gold Fund = normal
+     * (A2 SGD)            = bold dark blue
+     */
+
+    function formatFundName(value) {
+
+        const match =
+            value.match(
+                /^(.*)\(([^()]*)\)\s*$/
+            );
+
+
+        /*
+         * No brackets found
+         */
+
+        if (!match) {
+
+            return value;
+
+        }
+
+
+        const normalText =
+            match[1];
+
+        const bracketText =
+            "(" + match[2] + ")";
+
+
+        const fragment =
+            document.createDocumentFragment();
+
+
+        /*
+         * Normal fund name
+         */
+
+        const normalSpan =
+            document.createElement(
+                "span"
+            );
+
+        normalSpan.textContent =
+            normalText;
+
+
+        /*
+         * Final bracket text
+         */
+
+        const boldSpan =
+            document.createElement(
+                "span"
+            );
+
+        boldSpan.className =
+            "fund-bracket";
+
+        boldSpan.textContent =
+            bracketText;
+
+
+        fragment.appendChild(
+            normalSpan
+        );
+
+        fragment.appendChild(
+            boldSpan
+        );
+
+
+        return fragment;
+
+    }
+
+
+
+    async function loadCSV() {
+
+        const stats =
+            document.getElementById(
+                "stats"
+            );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "MonitoredFund.csv?v=" +
+                    Date.now()
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "CSV file not found. HTTP " +
+                    response.status
+                );
 
             }
 
-            const rows = text
-                .trim()
-                .split(/\r?\n/)
-                .map(line => line.split(","));
 
-            const head = rows[0];
-            const data = rows.slice(1);
+            const text =
+                await response.text();
+
+
+            if (!text.trim()) {
+
+                throw new Error(
+                    "CSV file is empty"
+                );
+
+            }
+
+
+            const rows =
+                text
+                    .trim()
+                    .split(/\r?\n/)
+                    .map(line =>
+                        line.split(",")
+                    );
+
+
+            const head =
+                rows[0];
+
+            const data =
+                rows.slice(1);
+
 
             let up = 0;
             let down = 0;
             let same = 0;
             let nodata = 0;
 
+
             const table =
-                document.getElementById("fundTable");
+                document.getElementById(
+                    "fundTable"
+                );
+
 
             table.innerHTML = "";
 
-            /* Header */
 
-            const thead = table.createTHead();
-            const headerRow = thead.insertRow();
+            /* =========================
+               HEADER
+               ========================= */
 
-            head.forEach((header, index) => {
+            const thead =
+                table.createTHead();
 
-                const th =
-                    document.createElement("th");
 
-                if (
-                    index === 0 &&
-                    header.trim().toLowerCase() === "sequence"
-                ) {
+            const headerRow =
+                thead.insertRow();
 
-                    th.textContent = "Seq.";
 
-                } else {
+            head.forEach(
+                (header, index) => {
 
-                    th.textContent = header.trim();
+                    const th =
+                        document.createElement(
+                            "th"
+                        );
+
+
+                    if (
+                        index === 0 &&
+                        header.trim()
+                            .toLowerCase() ===
+                            "sequence"
+                    ) {
+
+                        th.textContent =
+                            "Seq.";
+
+                    } else {
+
+                        th.textContent =
+                            header.trim();
+
+                    }
+
+
+                    /*
+                     * Hide columns 3 & 4
+                     * initially
+                     */
+
+                    if (
+                        index === 2 ||
+                        index === 3
+                    ) {
+
+                        th.classList.add(
+                            "hidden-column"
+                        );
+
+                    }
+
+
+                    /*
+                     * Highlight latest date
+                     */
+
+                    if (
+                        index ===
+                        head.length - 1
+                    ) {
+
+                        th.classList.add(
+                            "latest"
+                        );
+
+                    }
+
+
+                    headerRow.appendChild(
+                        th
+                    );
 
                 }
-
-                /*
-                 * Hide columns 3 & 4 initially
-                 */
-
-                if (index === 2 || index === 3) {
-
-                    th.classList.add("hidden-column");
-
-                }
-
-                if (index === head.length - 1) {
-
-                    th.classList.add("latest");
-
-                }
-
-                headerRow.appendChild(th);
-
-            });
+            );
 
 
-            /* Data */
 
-            const tbody = table.createTBody();
+            /* =========================
+               DATA
+               ========================= */
+
+            const tbody =
+                table.createTBody();
+
 
             data.forEach(row => {
 
-                if (row.length === 0) return;
+                if (row.length === 0)
+                    return;
 
-                const tr = tbody.insertRow();
+
+                const tr =
+                    tbody.insertRow();
+
 
                 let previous = null;
+
                 let trend = "➡";
+
 
                 for (
                     let i = 0;
@@ -275,17 +476,24 @@
                     i++
                 ) {
 
-                    const td = tr.insertCell();
+                    const td =
+                        tr.insertCell();
+
 
                     const value =
-                        (row[i] || "").trim();
+                        (row[i] || "")
+                            .trim();
 
 
                     /*
-                     * Hide columns 3 & 4 initially
+                     * Hide columns 3 & 4
+                     * initially
                      */
 
-                    if (i === 2 || i === 3) {
+                    if (
+                        i === 2 ||
+                        i === 3
+                    ) {
 
                         td.classList.add(
                             "hidden-column"
@@ -295,23 +503,65 @@
 
 
                     /*
-                     * First four columns remain text
+                     * COLUMN 2 - FUND
+                     *
+                     * Format final
+                     * bracket text.
                      */
 
-                    if (i < 4) {
+                    if (i === 1) {
 
-                        td.textContent = value;
+                        const formatted =
+                            formatFundName(
+                                value
+                            );
+
+
+                        if (
+                            typeof formatted ===
+                            "string"
+                        ) {
+
+                            td.textContent =
+                                formatted;
+
+                        } else {
+
+                            td.appendChild(
+                                formatted
+                            );
+
+                        }
+
 
                         continue;
 
                     }
 
 
-                    /* No data */
+                    /*
+                     * First four columns
+                     * remain text.
+                     */
+
+                    if (i < 4) {
+
+                        td.textContent =
+                            value;
+
+                        continue;
+
+                    }
+
+
+                    /* =========================
+                       NO DATA
+                       ========================= */
 
                     if (value === "") {
 
-                        td.textContent = "";
+                        td.textContent =
+                            "";
 
                         nodata++;
 
@@ -322,7 +572,8 @@
 
                     if (value === "-") {
 
-                        td.textContent = "-";
+                        td.textContent =
+                            "-";
 
                         nodata++;
 
@@ -332,48 +583,63 @@
 
 
                     const number =
-                        parseFloat(value);
+                        parseFloat(
+                            value
+                        );
+
 
                     if (isNaN(number)) {
 
-                        td.textContent = value;
+                        td.textContent =
+                            value;
 
                         continue;
 
                     }
 
 
-                    /* Price comparison */
+                    /* =========================
+                       PRICE COMPARISON
+                       ========================= */
 
-                    if (previous === null) {
+                    if (
+                        previous === null
+                    ) {
 
                         td.textContent =
                             "■ " +
                             number.toFixed(4);
 
-                        td.className = "same";
+                        td.className =
+                            "same";
 
                         same++;
 
-                    } else if (number > previous) {
+                    } else if (
+                        number > previous
+                    ) {
 
                         td.textContent =
                             "▲ " +
                             number.toFixed(4);
 
-                        td.className = "up";
+                        td.className =
+                            "up";
 
                         up++;
 
                         trend = "📈";
 
-                    } else if (number < previous) {
+                    } else if (
+                        number < previous
+                    ) {
 
                         td.textContent =
                             "▼ " +
                             number.toFixed(4);
 
-                        td.className = "down";
+                        td.className =
+                            "down";
 
                         down++;
 
@@ -385,38 +651,58 @@
                             "■ " +
                             number.toFixed(4);
 
-                        td.className = "same";
+                        td.className =
+                            "same";
 
                         same++;
 
                     }
 
-                    previous = number;
+
+                    previous =
+                        number;
 
                 }
 
 
-                /* Trend */
+                /* =========================
+                   TREND
+                   ========================= */
 
                 const trendCell =
                     tr.insertCell();
 
-                trendCell.textContent = trend;
+
+                trendCell.textContent =
+                    trend;
 
             });
 
 
-            /* Trend header */
+
+            /* =========================
+               TREND HEADER
+               ========================= */
 
             const trendHeader =
-                document.createElement("th");
-
-            trendHeader.textContent = "Trend";
-
-            headerRow.appendChild(trendHeader);
+                document.createElement(
+                    "th"
+                );
 
 
-            /* Statistics */
+            trendHeader.textContent =
+                "Trend";
+
+
+            headerRow.appendChild(
+                trendHeader
+            );
+
+
+
+            /* =========================
+               STATISTICS
+               ========================= */
 
             stats.innerHTML =
                 `Total Funds: ${data.length}
@@ -426,41 +712,52 @@
                 &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
 
 
+
             /*
              * Lock first visible columns
              */
 
-            setTimeout(lockFirstColumns, 100);
+            setTimeout(
+                lockFirstColumns,
+                100
+            );
 
 
         } catch (error) {
 
             console.error(error);
 
+
             stats.innerHTML =
-                "❌ ERROR: " + error.message;
+                "❌ ERROR: " +
+                error.message;
 
         }
 
     }
 
 
+
     /*
-     * Lock columns 1 & 2.
+     * Lock columns
      *
-     * If High / Low are shown,
-     * columns 1-4 are locked.
+     * Hidden mode:
+     *   Columns 1 & 2 locked.
      *
-     * If High / Low are hidden,
-     * only columns 1-2 are locked.
+     * Visible mode:
+     *   Columns 1–4 locked.
      */
 
     function lockFirstColumns() {
 
         const table =
-            document.getElementById("fundTable");
+            document.getElementById(
+                "fundTable"
+            );
+
 
         let left = 0;
+
 
         const numberOfColumns =
             columnsVisible ? 4 : 2;
@@ -472,21 +769,19 @@
             column++
         ) {
 
-            /*
-             * Do not process hidden columns
-             */
-
             const cells =
                 table.querySelectorAll(
                     `th:nth-child(${column + 1}),
                      td:nth-child(${column + 1})`
                 );
 
-            if (!cells.length) continue;
+
+            if (!cells.length)
+                continue;
 
 
             /*
-             * Get width of visible cell
+             * Find first visible cell
              */
 
             const firstVisibleCell =
@@ -497,7 +792,9 @@
                         )
                 );
 
-            if (!firstVisibleCell) continue;
+
+            if (!firstVisibleCell)
+                continue;
 
 
             const width =
@@ -508,19 +805,32 @@
 
             cells.forEach(cell => {
 
-                cell.style.position = "sticky";
-                cell.style.left = left + "px";
+                cell.style.position =
+                    "sticky";
 
-                if (cell.tagName === "TH") {
 
-                    cell.style.top = "0";
-                    cell.style.zIndex = "20";
+                cell.style.left =
+                    left + "px";
+
+
+                if (
+                    cell.tagName === "TH"
+                ) {
+
+                    cell.style.top =
+                        "0";
+
+                    cell.style.zIndex =
+                        "20";
+
                     cell.style.background =
                         "#e6e6e6";
 
                 } else {
 
-                    cell.style.zIndex = "10";
+                    cell.style.zIndex =
+                        "10";
+
                     cell.style.background =
                         "#fff";
 
@@ -536,7 +846,10 @@
     }
 
 
-    /* Load CSV */
+
+    /* =========================
+       LOAD CSV
+       ========================= */
 
     loadCSV();
 

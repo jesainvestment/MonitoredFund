@@ -93,12 +93,32 @@
         background: #fff3b0 !important;
     }
 
-    /* Column 2:
-       Text inside final brackets is bold dark blue */
+    /* Column 2 bracket text */
 
     .fund-bracket {
         font-weight: bold;
         color: #00008B;
+    }
+
+    /* Max / Min */
+
+    .max-min {
+        line-height: 1.35;
+        text-align: left;
+    }
+
+    .max-value {
+        color: #006400;
+        font-weight: bold;
+    }
+
+    .min-value {
+        color: #cc0000;
+        font-weight: bold;
+    }
+
+    .max-min-label {
+        font-weight: normal;
     }
 </style>
 ```
@@ -135,7 +155,9 @@
 
 <script>
 
-    /* Column 3 & 4 visibility */
+    /* ==========================================
+       COLUMN 3 & 4 VISIBILITY
+       ========================================== */
 
     let columnsVisible = false;
 
@@ -194,10 +216,6 @@
         }
 
 
-        /*
-         * Recalculate sticky columns
-         */
-
         setTimeout(
             lockFirstColumns,
             50
@@ -207,18 +225,15 @@
 
 
 
+    /* ==========================================
+       FORMAT FUND NAME
+       ========================================== */
+
     /*
-     * Format Column 2
+     * Column 2:
      *
-     * Only the FINAL ( ... ) section
-     * is made bold and dark blue.
-     *
-     * Example:
-     *
-     * BGF World Gold Fund (A2 SGD)
-     *
-     * BGF World Gold Fund = normal
-     * (A2 SGD)            = bold dark blue
+     * Only the final ( ... ) section
+     * is bold dark blue.
      */
 
     function formatFundName(value) {
@@ -228,10 +243,6 @@
                 /^(.*)\(([^()]*)\)\s*$/
             );
 
-
-        /*
-         * No brackets found
-         */
 
         if (!match) {
 
@@ -251,10 +262,6 @@
             document.createDocumentFragment();
 
 
-        /*
-         * Normal fund name
-         */
-
         const normalSpan =
             document.createElement(
                 "span"
@@ -263,10 +270,6 @@
         normalSpan.textContent =
             normalText;
 
-
-        /*
-         * Final bracket text
-         */
 
         const boldSpan =
             document.createElement(
@@ -294,6 +297,10 @@
     }
 
 
+
+    /* ==========================================
+       LOAD CSV
+       ========================================== */
 
     async function loadCSV() {
 
@@ -366,9 +373,9 @@
             table.innerHTML = "";
 
 
-            /* =========================
+            /* =================================
                HEADER
-               ========================= */
+               ================================= */
 
             const thead =
                 table.createTHead();
@@ -406,8 +413,8 @@
 
 
                     /*
-                     * Hide columns 3 & 4
-                     * initially
+                     * Hide Column 3 and Column 4
+                     * initially.
                      */
 
                     if (
@@ -423,7 +430,7 @@
 
 
                     /*
-                     * Highlight latest date
+                     * Highlight latest date.
                      */
 
                     if (
@@ -447,9 +454,9 @@
 
 
 
-            /* =========================
+            /* =================================
                DATA
-               ========================= */
+               ================================= */
 
             const tbody =
                 table.createTBody();
@@ -470,6 +477,23 @@
                 let trend = "➡";
 
 
+                /*
+                 * =================================
+                 * MAX / MIN
+                 *
+                 * START FROM COLUMN 5
+                 *
+                 * Column 5 = index 4
+                 *
+                 * Continue through the last
+                 * collected data column.
+                 * =================================
+                 */
+
+                let maxValue = null;
+                let minValue = null;
+
+
                 for (
                     let i = 0;
                     i < head.length;
@@ -486,8 +510,8 @@
 
 
                     /*
-                     * Hide columns 3 & 4
-                     * initially
+                     * Hide Columns 3 & 4
+                     * initially.
                      */
 
                     if (
@@ -502,12 +526,9 @@
                     }
 
 
-                    /*
-                     * COLUMN 2 - FUND
-                     *
-                     * Format final
-                     * bracket text.
-                     */
+                    /* =========================
+                       COLUMN 2 - FUND
+                       ========================= */
 
                     if (i === 1) {
 
@@ -539,10 +560,9 @@
                     }
 
 
-                    /*
-                     * First four columns
-                     * remain text.
-                     */
+                    /* =========================
+                       FIRST FOUR COLUMNS
+                       ========================= */
 
                     if (i < 4) {
 
@@ -594,6 +614,39 @@
                             value;
 
                         continue;
+
+                    }
+
+
+                    /* =========================
+                       MAX / MIN CALCULATION
+                       ========================= */
+
+                    /*
+                     * This calculation starts
+                     * ONLY from Column 5.
+                     *
+                     * Column 5 = index 4.
+                     */
+
+                    if (
+                        maxValue === null ||
+                        number > maxValue
+                    ) {
+
+                        maxValue =
+                            number;
+
+                    }
+
+
+                    if (
+                        minValue === null ||
+                        number < minValue
+                    ) {
+
+                        minValue =
+                            number;
 
                     }
 
@@ -665,9 +718,10 @@
                 }
 
 
-                /* =========================
-                   TREND
-                   ========================= */
+
+                /* =================================
+                   TREND COLUMN
+                   ================================= */
 
                 const trendCell =
                     tr.insertCell();
@@ -676,13 +730,144 @@
                 trendCell.textContent =
                     trend;
 
+
+
+                /* =================================
+                   MAX / MIN COLUMN
+                   ================================= */
+
+                const maxMinCell =
+                    tr.insertCell();
+
+
+                maxMinCell.className =
+                    "max-min";
+
+
+                if (
+                    maxValue !== null &&
+                    minValue !== null
+                ) {
+
+                    /*
+                     * MAX - TOP LINE
+                     */
+
+                    const maxLine =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    const maxLabel =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    maxLabel.className =
+                        "max-min-label";
+
+
+                    maxLabel.textContent =
+                        "Max: ";
+
+
+                    const maxText =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    maxText.className =
+                        "max-value";
+
+
+                    maxText.textContent =
+                        maxValue.toFixed(4);
+
+
+                    maxLine.appendChild(
+                        maxLabel
+                    );
+
+
+                    maxLine.appendChild(
+                        maxText
+                    );
+
+
+                    /*
+                     * MIN - BOTTOM LINE
+                     */
+
+                    const minLine =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    const minLabel =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    minLabel.className =
+                        "max-min-label";
+
+
+                    minLabel.textContent =
+                        "Min: ";
+
+
+                    const minText =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    minText.className =
+                        "min-value";
+
+
+                    minText.textContent =
+                        minValue.toFixed(4);
+
+
+                    minLine.appendChild(
+                        minLabel
+                    );
+
+
+                    minLine.appendChild(
+                        minText
+                    );
+
+
+                    maxMinCell.appendChild(
+                        maxLine
+                    );
+
+
+                    maxMinCell.appendChild(
+                        minLine
+                    );
+
+                } else {
+
+                    maxMinCell.textContent =
+                        "-";
+
+                }
+
             });
 
 
 
-            /* =========================
+            /* =================================
                TREND HEADER
-               ========================= */
+               ================================= */
 
             const trendHeader =
                 document.createElement(
@@ -700,9 +885,29 @@
 
 
 
-            /* =========================
+            /* =================================
+               MAX / MIN HEADER
+               ================================= */
+
+            const maxMinHeader =
+                document.createElement(
+                    "th"
+                );
+
+
+            maxMinHeader.textContent =
+                "Max / Min";
+
+
+            headerRow.appendChild(
+                maxMinHeader
+            );
+
+
+
+            /* =================================
                STATISTICS
-               ========================= */
+               ================================= */
 
             stats.innerHTML =
                 `Total Funds: ${data.length}
@@ -714,7 +919,7 @@
 
 
             /*
-             * Lock first visible columns
+             * Lock first visible columns.
              */
 
             setTimeout(
@@ -738,14 +943,18 @@
 
 
 
+    /* ==========================================
+       LOCK FIRST COLUMNS
+       ========================================== */
+
     /*
-     * Lock columns
-     *
      * Hidden mode:
-     *   Columns 1 & 2 locked.
+     *
+     * Columns 1 & 2 locked.
      *
      * Visible mode:
-     *   Columns 1–4 locked.
+     *
+     * Columns 1–4 locked.
      */
 
     function lockFirstColumns() {
@@ -781,7 +990,7 @@
 
 
             /*
-             * Find first visible cell
+             * Find first visible cell.
              */
 
             const firstVisibleCell =
@@ -847,9 +1056,9 @@
 
 
 
-    /* =========================
+    /* ==========================================
        LOAD CSV
-       ========================= */
+       ========================================== */
 
     loadCSV();
 

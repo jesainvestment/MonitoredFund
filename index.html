@@ -24,7 +24,9 @@
         font-weight: bold;
     }
 
-    /* Show / Hide button */
+    /* ==============================
+       SHOW / HIDE BUTTON
+       ============================== */
 
     #toggleColumns {
         margin: 10px 0;
@@ -70,6 +72,26 @@
         position: sticky;
         top: 0;
         z-index: 5;
+    }
+
+
+    /* ==============================
+       COLUMN 2 WIDTH
+       ============================== */
+
+    /*
+     * Column 2 is approximately 80%
+     * of its previous 1:1 width.
+     *
+     * Width is set to 240px instead
+     * of the previous natural width.
+     */
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 240px;
+        max-width: 240px;
+        min-width: 240px;
     }
 
 
@@ -264,14 +286,6 @@
        FORMAT FUND NAME
        ========================================== */
 
-    /*
-     * Only the final
-     *
-     * ( ... )
-     *
-     * section is bold dark blue.
-     */
-
     function formatFundName(value) {
 
         const match =
@@ -453,7 +467,6 @@
 
                     /*
                      * Rename Sequence
-                     * to Seq.
                      */
 
                     if (
@@ -491,8 +504,7 @@
 
 
                     /*
-                     * Highlight latest
-                     * collected date
+                     * Highlight latest date
                      */
 
                     if (
@@ -539,21 +551,13 @@
 
                 let previous = null;
 
-
                 let trend = "➡";
 
 
                 /*
-                 * =================================
-                 * MAX / MIN
+                 * Max / Min
                  *
-                 * START FROM COLUMN 5
-                 *
-                 * Column 5 = index 4
-                 *
-                 * Continue through the latest
-                 * collected date.
-                 * =================================
+                 * Start from Column 5
                  */
 
                 let maxValue = null;
@@ -636,7 +640,6 @@
                         td.textContent =
                             value;
 
-
                         continue;
 
                     }
@@ -687,7 +690,7 @@
 
 
                     /* =========================
-                       MAX / MIN CALCULATION
+                       MAX / MIN
                        ========================= */
 
                     if (
@@ -822,12 +825,8 @@
                     minValue !== null
                 ) {
 
-
                     /*
-                     * MAX
-                     *
-                     * ▲ Arrow
-                     * Dark Green
+                     * MAX - GREEN
                      */
 
                     const maxLine =
@@ -857,10 +856,7 @@
 
 
                     /*
-                     * MIN
-                     *
-                     * ▼ Arrow
-                     * Red
+                     * MIN - RED
                      */
 
                     const minLine =
@@ -889,10 +885,6 @@
                     );
 
 
-                    /*
-                     * Add both lines
-                     */
-
                     maxMinCell.appendChild(
                         maxLine
                     );
@@ -901,7 +893,6 @@
                     maxMinCell.appendChild(
                         minLine
                     );
-
 
                 } else {
 
@@ -968,25 +959,18 @@
 
 
             /* =================================
-               LOCK COLUMNS AND SCROLL RIGHT
+               LOCK COLUMNS
+               AND SCROLL RIGHT
                ================================= */
 
             setTimeout(() => {
-
-                /*
-                 * Lock first columns
-                 */
 
                 lockFirstColumns();
 
 
                 /*
                  * Automatically scroll
-                 * table-wrap to the right
-                 *
-                 * This shows the latest
-                 * collected date when the
-                 * webpage opens.
+                 * table-wrap to the right.
                  */
 
                 const tableWrap =
@@ -1066,10 +1050,6 @@
 
             }
 
-
-            /*
-             * Find first visible cell
-             */
 
             const firstVisibleCell =
                 Array.from(cells).find(

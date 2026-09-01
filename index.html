@@ -41,6 +41,11 @@
         background: #d6d6d6;
     }
 
+
+    /* ==============================
+       TABLE
+       ============================== */
+
     .table-wrap {
         overflow: auto;
         max-height: 85vh;
@@ -67,13 +72,19 @@
         z-index: 5;
     }
 
-    /* Hidden columns */
+
+    /* ==============================
+       HIDDEN COLUMNS
+       ============================== */
 
     .hidden-column {
         display: none;
     }
 
-    /* Price movement colours */
+
+    /* ==============================
+       PRICE MOVEMENT
+       ============================== */
 
     .up {
         background: #d9f2d9;
@@ -87,20 +98,29 @@
         background: #fff;
     }
 
-    /* Latest date */
+
+    /* ==============================
+       LATEST DATE
+       ============================== */
 
     .latest {
         background: #fff3b0 !important;
     }
 
-    /* Column 2 bracket text */
+
+    /* ==============================
+       FUND NAME - COLUMN 2
+       ============================== */
 
     .fund-bracket {
         font-weight: bold;
         color: #00008B;
     }
 
-    /* Max / Min */
+
+    /* ==============================
+       MAX / MIN
+       ============================== */
 
     .max-min {
         line-height: 1.35;
@@ -117,9 +137,6 @@
         font-weight: bold;
     }
 
-    .max-min-label {
-        font-weight: normal;
-    }
 </style>
 ```
 
@@ -130,15 +147,24 @@
 ```
 <h2>Fund Monitoring Dashboard</h2>
 
+
 <div id="stats">
     Loading...
 </div>
 
-<!-- Show / Hide Columns 3 & 4 -->
 
-<button id="toggleColumns" onclick="toggleColumns()">
+<!--
+    Show / Hide Columns 3 & 4
+-->
+
+<button
+    id="toggleColumns"
+    onclick="toggleColumns()">
+
     Show High / Low
+
 </button>
+
 
 <div class="table-wrap">
 
@@ -153,7 +179,9 @@
 </div>
 
 
+
 <script>
+
 
     /* ==========================================
        COLUMN 3 & 4 VISIBILITY
@@ -166,11 +194,17 @@
 
         columnsVisible = !columnsVisible;
 
+
         const table =
-            document.getElementById("fundTable");
+            document.getElementById(
+                "fundTable"
+            );
+
 
         const button =
-            document.getElementById("toggleColumns");
+            document.getElementById(
+                "toggleColumns"
+            );
 
 
         /*
@@ -178,10 +212,11 @@
          * Column 4 = index 3
          */
 
-        const cells = table.querySelectorAll(
-            "th:nth-child(3), td:nth-child(3), " +
-            "th:nth-child(4), td:nth-child(4)"
-        );
+        const cells =
+            table.querySelectorAll(
+                "th:nth-child(3), td:nth-child(3), " +
+                "th:nth-child(4), td:nth-child(4)"
+            );
 
 
         cells.forEach(cell => {
@@ -230,10 +265,11 @@
        ========================================== */
 
     /*
-     * Column 2:
+     * Only the final
      *
-     * Only the final ( ... ) section
-     * is bold dark blue.
+     * ( ... )
+     *
+     * section is bold dark blue.
      */
 
     function formatFundName(value) {
@@ -254,6 +290,7 @@
         const normalText =
             match[1];
 
+
         const bracketText =
             "(" + match[2] + ")";
 
@@ -262,22 +299,33 @@
             document.createDocumentFragment();
 
 
+        /*
+         * Normal fund name
+         */
+
         const normalSpan =
             document.createElement(
                 "span"
             );
 
+
         normalSpan.textContent =
             normalText;
 
+
+        /*
+         * Final bracket text
+         */
 
         const boldSpan =
             document.createElement(
                 "span"
             );
 
+
         boldSpan.className =
             "fund-bracket";
+
 
         boldSpan.textContent =
             bracketText;
@@ -286,6 +334,7 @@
         fragment.appendChild(
             normalSpan
         );
+
 
         fragment.appendChild(
             boldSpan
@@ -342,6 +391,10 @@
             }
 
 
+            /*
+             * Convert CSV into rows
+             */
+
             const rows =
                 text
                     .trim()
@@ -354,13 +407,17 @@
             const head =
                 rows[0];
 
+
             const data =
                 rows.slice(1);
 
 
             let up = 0;
+
             let down = 0;
+
             let same = 0;
+
             let nodata = 0;
 
 
@@ -394,6 +451,11 @@
                         );
 
 
+                    /*
+                     * Rename Sequence
+                     * to Seq.
+                     */
+
                     if (
                         index === 0 &&
                         header.trim()
@@ -413,8 +475,7 @@
 
 
                     /*
-                     * Hide Column 3 and Column 4
-                     * initially.
+                     * Hide Columns 3 & 4
                      */
 
                     if (
@@ -430,7 +491,8 @@
 
 
                     /*
-                     * Highlight latest date.
+                     * Highlight latest
+                     * collected date
                      */
 
                     if (
@@ -464,8 +526,11 @@
 
             data.forEach(row => {
 
-                if (row.length === 0)
+                if (row.length === 0) {
+
                     return;
+
+                }
 
 
                 const tr =
@@ -473,6 +538,7 @@
 
 
                 let previous = null;
+
 
                 let trend = "➡";
 
@@ -485,13 +551,15 @@
                  *
                  * Column 5 = index 4
                  *
-                 * Continue through the last
-                 * collected data column.
+                 * Continue through the latest
+                 * collected date.
                  * =================================
                  */
 
                 let maxValue = null;
+
                 let minValue = null;
+
 
 
                 for (
@@ -511,7 +579,6 @@
 
                     /*
                      * Hide Columns 3 & 4
-                     * initially.
                      */
 
                     if (
@@ -569,6 +636,7 @@
                         td.textContent =
                             value;
 
+
                         continue;
 
                     }
@@ -622,13 +690,6 @@
                        MAX / MIN CALCULATION
                        ========================= */
 
-                    /*
-                     * This calculation starts
-                     * ONLY from Column 5.
-                     *
-                     * Column 5 = index 4.
-                     */
-
                     if (
                         maxValue === null ||
                         number > maxValue
@@ -663,8 +724,10 @@
                             "■ " +
                             number.toFixed(4);
 
+
                         td.className =
                             "same";
+
 
                         same++;
 
@@ -676,12 +739,16 @@
                             "▲ " +
                             number.toFixed(4);
 
+
                         td.className =
                             "up";
 
+
                         up++;
 
-                        trend = "📈";
+
+                        trend =
+                            "📈";
 
                     } else if (
                         number < previous
@@ -691,12 +758,16 @@
                             "▼ " +
                             number.toFixed(4);
 
+
                         td.className =
                             "down";
 
+
                         down++;
 
-                        trend = "📉";
+
+                        trend =
+                            "📉";
 
                     } else {
 
@@ -704,8 +775,10 @@
                             "■ " +
                             number.toFixed(4);
 
+
                         td.className =
                             "same";
+
 
                         same++;
 
@@ -749,28 +822,18 @@
                     minValue !== null
                 ) {
 
+
                     /*
-                     * MAX - TOP LINE
+                     * MAX
+                     *
+                     * ▲ Arrow
+                     * Dark Green
                      */
 
                     const maxLine =
                         document.createElement(
                             "div"
                         );
-
-
-                    const maxLabel =
-                        document.createElement(
-                            "span"
-                        );
-
-
-                    maxLabel.className =
-                        "max-min-label";
-
-
-                    maxLabel.textContent =
-                        "Max: ";
 
 
                     const maxText =
@@ -784,12 +847,8 @@
 
 
                     maxText.textContent =
+                        "▲ " +
                         maxValue.toFixed(4);
-
-
-                    maxLine.appendChild(
-                        maxLabel
-                    );
 
 
                     maxLine.appendChild(
@@ -798,27 +857,16 @@
 
 
                     /*
-                     * MIN - BOTTOM LINE
+                     * MIN
+                     *
+                     * ▼ Arrow
+                     * Red
                      */
 
                     const minLine =
                         document.createElement(
                             "div"
                         );
-
-
-                    const minLabel =
-                        document.createElement(
-                            "span"
-                        );
-
-
-                    minLabel.className =
-                        "max-min-label";
-
-
-                    minLabel.textContent =
-                        "Min: ";
 
 
                     const minText =
@@ -832,18 +880,18 @@
 
 
                     minText.textContent =
+                        "▼ " +
                         minValue.toFixed(4);
-
-
-                    minLine.appendChild(
-                        minLabel
-                    );
 
 
                     minLine.appendChild(
                         minText
                     );
 
+
+                    /*
+                     * Add both lines
+                     */
 
                     maxMinCell.appendChild(
                         maxLine
@@ -853,6 +901,7 @@
                     maxMinCell.appendChild(
                         minLine
                     );
+
 
                 } else {
 
@@ -918,14 +967,42 @@
 
 
 
-            /*
-             * Lock first visible columns.
-             */
+            /* =================================
+               LOCK COLUMNS AND SCROLL RIGHT
+               ================================= */
 
-            setTimeout(
-                lockFirstColumns,
-                100
-            );
+            setTimeout(() => {
+
+                /*
+                 * Lock first columns
+                 */
+
+                lockFirstColumns();
+
+
+                /*
+                 * Automatically scroll
+                 * table-wrap to the right
+                 *
+                 * This shows the latest
+                 * collected date when the
+                 * webpage opens.
+                 */
+
+                const tableWrap =
+                    document.querySelector(
+                        ".table-wrap"
+                    );
+
+
+                if (tableWrap) {
+
+                    tableWrap.scrollLeft =
+                        tableWrap.scrollWidth;
+
+                }
+
+            }, 200);
 
 
         } catch (error) {
@@ -947,16 +1024,6 @@
        LOCK FIRST COLUMNS
        ========================================== */
 
-    /*
-     * Hidden mode:
-     *
-     * Columns 1 & 2 locked.
-     *
-     * Visible mode:
-     *
-     * Columns 1–4 locked.
-     */
-
     function lockFirstColumns() {
 
         const table =
@@ -967,6 +1034,14 @@
 
         let left = 0;
 
+
+        /*
+         * Hidden:
+         * Columns 1 & 2 sticky.
+         *
+         * Visible:
+         * Columns 1–4 sticky.
+         */
 
         const numberOfColumns =
             columnsVisible ? 4 : 2;
@@ -985,12 +1060,15 @@
                 );
 
 
-            if (!cells.length)
+            if (!cells.length) {
+
                 continue;
+
+            }
 
 
             /*
-             * Find first visible cell.
+             * Find first visible cell
              */
 
             const firstVisibleCell =
@@ -1002,8 +1080,11 @@
                 );
 
 
-            if (!firstVisibleCell)
+            if (!firstVisibleCell) {
+
                 continue;
+
+            }
 
 
             const width =
@@ -1029,8 +1110,10 @@
                     cell.style.top =
                         "0";
 
+
                     cell.style.zIndex =
                         "20";
+
 
                     cell.style.background =
                         "#e6e6e6";
@@ -1039,6 +1122,7 @@
 
                     cell.style.zIndex =
                         "10";
+
 
                     cell.style.background =
                         "#fff";
@@ -1061,6 +1145,7 @@
        ========================================== */
 
     loadCSV();
+
 
 </script>
 ```

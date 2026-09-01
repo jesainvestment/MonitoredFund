@@ -1,497 +1,547 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta charset="utf-8">
-
-<meta name="viewport"
-      content="width=device-width,initial-scale=1">
-
+```
 <title>Fund Monitoring Dashboard</title>
 
 <style>
+    body {
+        font-family: Calibri, Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 16px;
+    }
 
-body{
-    font-family:Calibri,Arial;
-    background:#f5f5f5;
-    margin:16px
-}
+    #stats {
+        margin: 10px 0;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #ccc;
+        font-weight: bold;
+    }
 
-#stats{
-    margin:10px 0;
-    padding:10px;
-    background:#fff;
-    border:1px solid #ccc;
-    font-weight:bold
-}
+    /* Show / Hide button */
 
-.table-wrap{
-    overflow:auto;
-    max-height:85vh;
-    background:#fff;
-    border:1px solid #ccc
-}
+    #toggleColumns {
+        margin: 10px 0;
+        padding: 7px 14px;
+        font-family: Calibri, Arial, sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        border: 1px solid #999;
+        background: #e6e6e6;
+        border-radius: 4px;
+    }
 
-table{
-    border-collapse:collapse;
-    min-width:1400px
-}
+    #toggleColumns:hover {
+        background: #d6d6d6;
+    }
 
-th,td{
-    border:1px solid #ccc;
-    padding:6px 10px;
-    white-space:nowrap
-}
+    .table-wrap {
+        overflow: auto;
+        max-height: 85vh;
+        background: #fff;
+        border: 1px solid #ccc;
+    }
 
-th{
-    background:#e6e6e6;
-    position:sticky;
-    top:0;
-    z-index:5
-}
+    table {
+        border-collapse: collapse;
+        min-width: 1400px;
+    }
 
-.up{
-    background:#d9f2d9
-}
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
 
-.down{
-    background:#ffd9d9
-}
+    th {
+        background: #e6e6e6;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
 
-.same{
-    background:#fff
-}
+    /* Hidden columns */
 
-.latest{
-    background:#fff3b0 !important
-}
+    .hidden-column {
+        display: none;
+    }
 
+    /* Price movement colours */
+
+    .up {
+        background: #d9f2d9;
+    }
+
+    .down {
+        background: #ffd9d9;
+    }
+
+    .same {
+        background: #fff;
+    }
+
+    /* Latest date */
+
+    .latest {
+        background: #fff3b0 !important;
+    }
 </style>
+```
 
 </head>
 
-
 <body>
 
+```
 <h2>Fund Monitoring Dashboard</h2>
 
 <div id="stats">
-Loading...
+    Loading...
 </div>
+
+<!-- Show / Hide Columns 3 & 4 -->
+
+<button id="toggleColumns" onclick="toggleColumns()">
+    Show High / Low
+</button>
 
 <div class="table-wrap">
-
-<table id="fundTable">
-
-<thead></thead>
-
-<tbody></tbody>
-
-</table>
-
+    <table id="fundTable">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
 </div>
-
 
 <script>
 
-async function loadCSV(){
+    /* Column 3 & 4 visibility */
 
-    const stats =
-        document.getElementById("stats");
+    let columnsVisible = false;
 
-    try{
+    function toggleColumns() {
 
-        stats.textContent =
-            "Loading MonitoredFund.csv...";
+        columnsVisible = !columnsVisible;
 
-
-        const response =
-            await fetch(
-                "MonitoredFund.csv?v=" +
-                Date.now()
-            );
-
-
-        if(!response.ok){
-
-            throw new Error(
-                "CSV file not found. HTTP " +
-                response.status
-            );
-
-        }
-
-
-        const text =
-            await response.text();
-
-
-        if(!text.trim()){
-
-            throw new Error(
-                "CSV file is empty"
-            );
-
-        }
-
+        const table = document.getElementById("fundTable");
+        const button = document.getElementById("toggleColumns");
 
         /*
-         * Parse CSV
+         * Columns are zero-based:
+         * Column 3 = index 2
+         * Column 4 = index 3
          */
 
-        const lines =
-            text.trim().split(/\r?\n/);
-
-
-        const rows =
-            lines.map(line =>
-                line.split(",")
-            );
-
-
-        const head = rows[0];
-
-        const data = rows.slice(1);
-
-
-        /*
-         * Statistics
-         */
-
-        let up = 0;
-        let down = 0;
-        let same = 0;
-        let nodata = 0;
-
-
-        const table =
-            document.getElementById(
-                "fundTable"
-            );
-
-
-        table.innerHTML = "";
-
-
-        /*
-         * HEADER
-         */
-
-        const thead =
-            table.createTHead();
-
-        const headerRow =
-            thead.insertRow();
-
-
-        head.forEach((header,index)=>{
-
-    const th =
-        document.createElement("th");
-
-    /* Display Sequence as Seq. */
-    if(index === 0 && header.trim().toLowerCase() === "sequence"){
-        th.textContent = "Seq.";
-    }
-    else{
-        th.textContent = header.trim();
-    }
-
-    if(index === head.length-1){
-
-        th.classList.add(
-            "latest"
+        const cells = table.querySelectorAll(
+            "th:nth-child(3), td:nth-child(3), " +
+            "th:nth-child(4), td:nth-child(4)"
         );
 
-    }
-
-    headerRow.appendChild(th);
-
-});
-
-
-        /*
-         * BODY
-         */
-
-        const tbody =
-            table.createTBody();
-
-
-        data.forEach(row=>{
-
-            if(row.length === 0)
-                return;
-
-
-            const tr =
-                tbody.insertRow();
-
-
-            let previous = null;
-
-            let trend = "➡";
-
-
-            /*
-             * FIRST 4 COLUMNS
-             *
-             * Sequence
-             * Fund
-             * High
-             * Low
-             *
-             * ALWAYS TEXT
-             */
-
-            for(let i=0;
-                i<head.length;
-                i++){
-
-                const td =
-                    tr.insertCell();
-
-
-                const value =
-                    (row[i] || "").trim();
-
-
-                if(i < 4){
-
-                    td.textContent =
-                        value;
-
-                    continue;
-
-                }
-
-
-                /*
-                 * PRICE COLUMNS
-                 */
-
-                if(value === "" ||
-                   value === "-"){
-
-                    td.textContent =
-                        "";
-
-                    previous =
-                        null;
-
-                    nodata++;
-
-                    continue;
-
-                }
-
-
-                const number =
-                    parseFloat(value);
-
-
-                if(isNaN(number)){
-
-                    td.textContent =
-                        value;
-
-                    continue;
-
-                }
-
-
-                if(previous === null){
-
-                    td.textContent =
-                        "■ " +
-                        number.toFixed(4);
-
-                    td.className =
-                        "same";
-
-                    same++;
-
-                }
-
-                else if(number > previous){
-
-                    td.textContent =
-                        "▲ " +
-                        number.toFixed(4);
-
-                    td.className =
-                        "up";
-
-                    up++;
-
-                    trend = "📈";
-
-                }
-
-                else if(number < previous){
-
-                    td.textContent =
-                        "▼ " +
-                        number.toFixed(4);
-
-                    td.className =
-                        "down";
-
-                    down++;
-
-                    trend = "📉";
-
-                }
-
-                else{
-
-                    td.textContent =
-                        "■ " +
-                        number.toFixed(4);
-
-                    td.className =
-                        "same";
-
-                    same++;
-
-                }
-
-
-                previous =
-                    number;
-
+        cells.forEach(cell => {
+
+            if (columnsVisible) {
+                cell.classList.remove("hidden-column");
+            } else {
+                cell.classList.add("hidden-column");
             }
-
-
-            /*
-             * TREND
-             */
-
-            const trendCell =
-                tr.insertCell();
-
-            trendCell.textContent =
-                trend;
 
         });
 
+        if (columnsVisible) {
+            button.textContent = "Hide High / Low";
+        } else {
+            button.textContent = "Show High / Low";
+        }
 
         /*
-         * TREND HEADER
+         * Recalculate sticky columns
+         * after changing visibility.
          */
 
-        const trendHeader =
-            document.createElement("th");
-
-        trendHeader.textContent =
-            "Trend";
-
-        headerRow.appendChild(
-            trendHeader
-        );
+        setTimeout(lockFirstColumns, 50);
+    }
 
 
-        /*
-         * STATISTICS
-         */
+    async function loadCSV() {
 
-        stats.innerHTML =
-            `Total Funds: ${data.length}
-             &nbsp;&nbsp; 🟢 Up: ${up}
-             &nbsp;&nbsp; 🔴 Down: ${down}
-             &nbsp;&nbsp; ⚪ Same: ${same}
-             &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
+        const stats = document.getElementById("stats");
 
+        try {
 
-        /*
-         * LOCK FIRST 4 COLUMNS
-         */
+            const response = await fetch(
+                "MonitoredFund.csv?v=" + Date.now()
+            );
 
-        setTimeout(function(){
+            if (!response.ok) {
 
-            let left = 0;
-
-
-            for(let column=0;
-                column<4;
-                column++){
-
-                const cells =
-                    table.querySelectorAll(
-                        `th:nth-child(${column+1}),
-                         td:nth-child(${column+1})`
-                    );
-
-
-                if(cells.length === 0)
-                    continue;
-
-
-                const width =
-                    cells[0].getBoundingClientRect().width;
-
-
-                cells.forEach(cell=>{
-
-                    cell.style.position =
-                        "sticky";
-
-
-                    cell.style.left =
-                        left + "px";
-
-
-                    if(cell.tagName === "TH"){
-
-                        cell.style.top =
-                            "0";
-
-                        cell.style.zIndex =
-                            "20";
-
-                        cell.style.background =
-                            "#e6e6e6";
-
-                    }
-                    else{
-
-                        cell.style.zIndex =
-                            "10";
-
-                        cell.style.background =
-                            "#fff";
-
-                    }
-
-                });
-
-
-                left += width;
+                throw new Error(
+                    "CSV file not found. HTTP " + response.status
+                );
 
             }
 
-        },100);
+            const text = await response.text();
+
+            if (!text.trim()) {
+
+                throw new Error("CSV file is empty");
+
+            }
+
+            const rows = text
+                .trim()
+                .split(/\r?\n/)
+                .map(line => line.split(","));
+
+            const head = rows[0];
+            const data = rows.slice(1);
+
+            let up = 0;
+            let down = 0;
+            let same = 0;
+            let nodata = 0;
+
+            const table =
+                document.getElementById("fundTable");
+
+            table.innerHTML = "";
+
+            /* Header */
+
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+
+            head.forEach((header, index) => {
+
+                const th =
+                    document.createElement("th");
+
+                if (
+                    index === 0 &&
+                    header.trim().toLowerCase() === "sequence"
+                ) {
+
+                    th.textContent = "Seq.";
+
+                } else {
+
+                    th.textContent = header.trim();
+
+                }
+
+                /*
+                 * Hide columns 3 & 4 initially
+                 */
+
+                if (index === 2 || index === 3) {
+
+                    th.classList.add("hidden-column");
+
+                }
+
+                if (index === head.length - 1) {
+
+                    th.classList.add("latest");
+
+                }
+
+                headerRow.appendChild(th);
+
+            });
+
+
+            /* Data */
+
+            const tbody = table.createTBody();
+
+            data.forEach(row => {
+
+                if (row.length === 0) return;
+
+                const tr = tbody.insertRow();
+
+                let previous = null;
+                let trend = "➡";
+
+                for (
+                    let i = 0;
+                    i < head.length;
+                    i++
+                ) {
+
+                    const td = tr.insertCell();
+
+                    const value =
+                        (row[i] || "").trim();
+
+
+                    /*
+                     * Hide columns 3 & 4 initially
+                     */
+
+                    if (i === 2 || i === 3) {
+
+                        td.classList.add(
+                            "hidden-column"
+                        );
+
+                    }
+
+
+                    /*
+                     * First four columns remain text
+                     */
+
+                    if (i < 4) {
+
+                        td.textContent = value;
+
+                        continue;
+
+                    }
+
+
+                    /* No data */
+
+                    if (value === "") {
+
+                        td.textContent = "";
+
+                        nodata++;
+
+                        continue;
+
+                    }
+
+
+                    if (value === "-") {
+
+                        td.textContent = "-";
+
+                        nodata++;
+
+                        continue;
+
+                    }
+
+
+                    const number =
+                        parseFloat(value);
+
+                    if (isNaN(number)) {
+
+                        td.textContent = value;
+
+                        continue;
+
+                    }
+
+
+                    /* Price comparison */
+
+                    if (previous === null) {
+
+                        td.textContent =
+                            "■ " +
+                            number.toFixed(4);
+
+                        td.className = "same";
+
+                        same++;
+
+                    } else if (number > previous) {
+
+                        td.textContent =
+                            "▲ " +
+                            number.toFixed(4);
+
+                        td.className = "up";
+
+                        up++;
+
+                        trend = "📈";
+
+                    } else if (number < previous) {
+
+                        td.textContent =
+                            "▼ " +
+                            number.toFixed(4);
+
+                        td.className = "down";
+
+                        down++;
+
+                        trend = "📉";
+
+                    } else {
+
+                        td.textContent =
+                            "■ " +
+                            number.toFixed(4);
+
+                        td.className = "same";
+
+                        same++;
+
+                    }
+
+                    previous = number;
+
+                }
+
+
+                /* Trend */
+
+                const trendCell =
+                    tr.insertCell();
+
+                trendCell.textContent = trend;
+
+            });
+
+
+            /* Trend header */
+
+            const trendHeader =
+                document.createElement("th");
+
+            trendHeader.textContent = "Trend";
+
+            headerRow.appendChild(trendHeader);
+
+
+            /* Statistics */
+
+            stats.innerHTML =
+                `Total Funds: ${data.length}
+                &nbsp;&nbsp; 🟢 Up: ${up}
+                &nbsp;&nbsp; 🔴 Down: ${down}
+                &nbsp;&nbsp; ⚪ Same: ${same}
+                &nbsp;&nbsp; ⚫ No Data: ${nodata}`;
+
+
+            /*
+             * Lock first visible columns
+             */
+
+            setTimeout(lockFirstColumns, 100);
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            stats.innerHTML =
+                "❌ ERROR: " + error.message;
+
+        }
 
     }
 
 
-    catch(error){
+    /*
+     * Lock columns 1 & 2.
+     *
+     * If High / Low are shown,
+     * columns 1-4 are locked.
+     *
+     * If High / Low are hidden,
+     * only columns 1-2 are locked.
+     */
 
-        console.error(error);
+    function lockFirstColumns() {
 
-        stats.innerHTML =
-            "❌ ERROR: " +
-            error.message;
+        const table =
+            document.getElementById("fundTable");
+
+        let left = 0;
+
+        const numberOfColumns =
+            columnsVisible ? 4 : 2;
+
+
+        for (
+            let column = 0;
+            column < numberOfColumns;
+            column++
+        ) {
+
+            /*
+             * Do not process hidden columns
+             */
+
+            const cells =
+                table.querySelectorAll(
+                    `th:nth-child(${column + 1}),
+                     td:nth-child(${column + 1})`
+                );
+
+            if (!cells.length) continue;
+
+
+            /*
+             * Get width of visible cell
+             */
+
+            const firstVisibleCell =
+                Array.from(cells).find(
+                    cell =>
+                        !cell.classList.contains(
+                            "hidden-column"
+                        )
+                );
+
+            if (!firstVisibleCell) continue;
+
+
+            const width =
+                firstVisibleCell
+                    .getBoundingClientRect()
+                    .width;
+
+
+            cells.forEach(cell => {
+
+                cell.style.position = "sticky";
+                cell.style.left = left + "px";
+
+                if (cell.tagName === "TH") {
+
+                    cell.style.top = "0";
+                    cell.style.zIndex = "20";
+                    cell.style.background =
+                        "#e6e6e6";
+
+                } else {
+
+                    cell.style.zIndex = "10";
+                    cell.style.background =
+                        "#fff";
+
+                }
+
+            });
+
+
+            left += width;
+
+        }
 
     }
 
-}
 
+    /* Load CSV */
 
-loadCSV();
+    loadCSV();
 
 </script>
+```
 
 </body>
 
